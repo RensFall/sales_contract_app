@@ -235,6 +235,9 @@ class ContractDetailsScreen extends StatelessWidget {
       case ContractStatus.pendingPayment:
         // TODO: Handle this case.
         throw UnimplementedError();
+      case ContractStatus.pendingDepartment:
+        // TODO: Handle this case.
+        throw UnimplementedError();
     }
   }
 
@@ -255,6 +258,9 @@ class ContractDetailsScreen extends StatelessWidget {
       case ContractStatus.pendingPayment:
         // TODO: Handle this case.
         throw UnimplementedError();
+      case ContractStatus.pendingDepartment:
+        // TODO: Handle this case.
+        throw UnimplementedError();
     }
   }
 
@@ -273,6 +279,9 @@ class ContractDetailsScreen extends StatelessWidget {
       case ContractStatus.cancelled:
         return 'Cancelled';
       case ContractStatus.pendingPayment:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case ContractStatus.pendingDepartment:
         // TODO: Handle this case.
         throw UnimplementedError();
     }
