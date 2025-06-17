@@ -30,6 +30,9 @@ dependencies:
   # Signature
   signature: ^5.4.1
   
+  # File Handling
+  file_picker: ^6.1.1
+  
   # Image Handling
   image_picker: ^1.0.5
   
@@ -39,14 +42,20 @@ dependencies:
   
   # Connectivity
   connectivity_plus: ^5.0.2
-
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  flutter_lints: ^3.0.1
+  
+  # For web file download
+  universal_html: ^2.2.4
 
 flutter:
   uses-material-design: true
+  
+  # Add Arabic fonts
+  fonts:
+    - family: Almarai
+      fonts:
+        - asset: assets/fonts/Almarai-Regular.ttf
+        - asset: assets/fonts/Almarai-Bold.ttf
+          weight: 700
   
   # Add custom fonts if needed
   # fonts:

@@ -154,7 +154,7 @@ class _MyContractsScreenState extends State<MyContractsScreen>
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      '${contract.boatDetails['type']} - ${contract.boatDetails['hullNumber']}',
+                      '${contract.boatDetails.toString()} - ${contract.boatDetails.toString()}', // the cast here could be wrong
                       style: const TextStyle(color: Colors.grey),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -237,6 +237,9 @@ class _MyContractsScreenState extends State<MyContractsScreen>
         text = 'Cancelled';
         break;
       case ContractStatus.pendingPayment:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case ContractStatus.pendingDepartment:
         // TODO: Handle this case.
         throw UnimplementedError();
     }

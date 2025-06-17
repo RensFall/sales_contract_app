@@ -86,7 +86,7 @@ class _PendingPaymentScreenState extends State<PendingPaymentScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.amber.withOpacity(0.1),
+              color: Colors.amber,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(12),
                 topRight: Radius.circular(12),
@@ -158,7 +158,7 @@ class _PendingPaymentScreenState extends State<PendingPaymentScreen> {
                 ),
                 const SizedBox(height: 16),
                 _buildDetailRow(Icons.directions_boat, 'Boat',
-                    contract.boatDetails['type'] ?? 'Unknown'),
+                    contract.boatDetails.toString()), // could be wrong here
                 const SizedBox(height: 8),
                 _buildDetailRow(Icons.person, 'Buyer',
                     'ID: ${contract.buyerId.substring(0, 8)}'),

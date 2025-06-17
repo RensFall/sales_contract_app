@@ -1,13 +1,14 @@
 // lib/screens/contracts/admin_contract_review_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/intl.dart';
+import 'dart:io';
 import '../../model/contract_model.dart';
 import '../../services/auth_service.dart';
 import '../../services/contract_service.dart';
+import '../../services/pdf_service.dart';
 import '../../widget/contract_preview.dart';
 
 class AdminContractReviewScreen extends StatefulWidget {
@@ -21,160 +22,270 @@ class AdminContractReviewScreen extends StatefulWidget {
 }
 
 class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
-  bool _isApproving = false;
-  bool _isRejecting = false;
+  bool _isGeneratingPdf = false;
+  bool _isMarkingAsSent = false;
+  bool _isUploadingApproval = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Contract Review'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.picture_as_pdf),
-            onPressed: _previewPdf,
-            tooltip: 'Preview PDF',
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Contract Info Card
-            Container(
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.purple.shade400, Colors.purple.shade600],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                children: [
-                  const Icon(
-                    Icons.assignment,
-                    size: 48,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Contract #${widget.contract.id.substring(0, 8)}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Submitted for approval on ${DateFormat('dd/MM/yyyy').format(widget.contract.signedAt ?? DateTime.now())}',
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Verification Checklist
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.green.shade50,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.green.shade200),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.checklist, color: Colors.green.shade700),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Verification Checklist',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green.shade700,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  _buildChecklistItem('All parties have signed', true),
-                  _buildChecklistItem('Signatures verified', true),
-                  _buildChecklistItem(
-                      'Boat details complete', _isBoatDetailsComplete()),
-                  _buildChecklistItem('Payment terms clear', true),
-                  _buildChecklistItem('Legal requirements met', true),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
+            // Contract Status Card
+            _buildStatusCard(),
 
             // Contract Preview
             ContractPreview(contract: widget.contract),
 
             // Signatures Summary
-            Container(
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.draw, color: Colors.blue.shade700),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Digital Signatures',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue.shade700,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    '${widget.contract.signatures.length} verified signatures collected',
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'All signatures have been verified through OTP authentication',
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                  ),
-                ],
+            _buildSignaturesSummary(),
+
+            // Admin Actions based on status
+            _buildAdminActions(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusCard() {
+    IconData icon;
+    Color color;
+    String title;
+    String subtitle;
+
+    if (widget.contract.departmentApprovedPdfUrl != null) {
+      icon = Icons.verified;
+      color = Colors.green;
+      title = 'Contract Approved';
+      subtitle = 'Department approval received';
+    } else if (widget.contract.sentToDepartment) {
+      icon = Icons.hourglass_empty;
+      color = Colors.orange;
+      title = 'Pending Department Approval';
+      subtitle = 'Waiting for Transportation Department';
+    } else {
+      icon = Icons.assignment;
+      color = Colors.blue;
+      title = 'Ready for Processing';
+      subtitle = 'Generate PDF and submit to department';
+    }
+
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [color, color],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, size: 48, color: Colors.white),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            subtitle,
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 14,
+            ),
+          ),
+          if (widget.contract.sentToDepartmentAt != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Sent on: ${DateFormat('dd/MM/yyyy').format(widget.contract.sentToDepartmentAt!)}',
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 12,
               ),
             ),
+          ],
+        ],
+      ),
+    );
+  }
 
-            // Action Buttons
+  Widget _buildSignaturesSummary() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.green.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.green.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.green.shade700),
+              const SizedBox(height: 8),
+              Text(
+                'All Signatures Collected',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green.shade700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '${widget.contract.signatures.length} signatures verified',
+            style: const TextStyle(fontSize: 14),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Payment completed on ${widget.contract.paidAt != null ? DateFormat('dd/MM/yyyy').format(widget.contract.paidAt!) : "N/A"}',
+            style: const TextStyle(fontSize: 14),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAdminActions() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          // Step 1: Generate PDF
+          if (widget.contract.generatedPdfUrl == null &&
+              !widget.contract.sentToDepartment) ...[
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton.icon(
+                onPressed: _isGeneratingPdf ? null : _generatePdf,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                ),
+                icon: _isGeneratingPdf
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : const Icon(Icons.picture_as_pdf),
+                label: Text(_isGeneratingPdf
+                    ? 'Generating PDF...'
+                    : 'Generate Contract PDF'),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+
+          // Step 2: Download generated PDF and mark as sent
+          if (widget.contract.generatedPdfUrl != null &&
+              !widget.contract.sentToDepartment) ...[
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: OutlinedButton.icon(
+                onPressed: () => _downloadPdf(widget.contract.generatedPdfUrl!),
+                icon: const Icon(Icons.download),
+                label: const Text('Download Generated PDF'),
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton.icon(
+                onPressed: _isMarkingAsSent ? null : _markAsSentToDepartment,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                ),
+                icon: _isMarkingAsSent
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : const Icon(Icons.send),
+                label: Text(_isMarkingAsSent
+                    ? 'Updating Status...'
+                    : 'Mark as Sent to Department'),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Click after submitting to Transportation Department',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+                fontStyle: FontStyle.italic,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+          ],
+
+          // Step 3: Upload approved PDF
+          if (widget.contract.sentToDepartment &&
+              widget.contract.departmentApprovedPdfUrl == null) ...[
             Container(
               padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.amber.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.amber),
+              ),
               child: Column(
                 children: [
+                  Icon(Icons.upload_file,
+                      size: 48, color: Colors.amber.shade700),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Upload Department Approved PDF',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.amber.shade700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Once you receive the approved PDF from the Transportation Department, upload it here',
+                    style: TextStyle(fontSize: 13),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
-                    height: 48,
                     child: ElevatedButton.icon(
-                      onPressed: _isApproving ? null : _approveContract,
+                      onPressed:
+                          _isUploadingApproval ? null : _uploadApprovedPdf,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
                       ),
-                      icon: _isApproving
+                      icon: _isUploadingApproval
                           ? const SizedBox(
                               width: 20,
                               height: 20,
@@ -184,163 +295,125 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
                                     AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
-                          : const Icon(Icons.check_circle),
-                      label: Text(_isApproving
-                          ? 'Approving...'
-                          : 'Approve & Add Stamp'),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: OutlinedButton.icon(
-                      onPressed: _isRejecting ? null : _rejectContract,
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.red,
-                        side: const BorderSide(color: Colors.red),
-                      ),
-                      icon: _isRejecting
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.red),
-                              ),
-                            )
-                          : const Icon(Icons.cancel),
-                      label: Text(
-                          _isRejecting ? 'Rejecting...' : 'Reject Contract'),
+                          : const Icon(Icons.cloud_upload),
+                      label: Text(_isUploadingApproval
+                          ? 'Uploading...'
+                          : 'Upload Approved PDF'),
                     ),
                   ),
                 ],
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
 
-  Widget _buildChecklistItem(String text, bool isChecked) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        children: [
-          Icon(
-            isChecked ? Icons.check_circle : Icons.radio_button_unchecked,
-            size: 20,
-            color: isChecked ? Colors.green : Colors.grey,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            text,
-            style: TextStyle(
-              color: isChecked ? Colors.green.shade700 : Colors.grey,
-              decoration: isChecked ? null : TextDecoration.lineThrough,
+          // Step 4: Contract is fully approved
+          if (widget.contract.departmentApprovedPdfUrl != null) ...[
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.green),
+              ),
+              child: Column(
+                children: [
+                  Icon(Icons.check_circle,
+                      size: 48, color: Colors.green.shade700),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Contract Fully Approved',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green.shade700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'The contract has been approved by the Transportation Department and is now finalized.',
+                    style: TextStyle(fontSize: 13),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  OutlinedButton.icon(
+                    onPressed: () =>
+                        _downloadPdf(widget.contract.departmentApprovedPdfUrl!),
+                    icon: const Icon(Icons.download),
+                    label: const Text('Download Final PDF'),
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );
   }
 
-  bool _isBoatDetailsComplete() {
-    final details = widget.contract.boatDetails;
-    return details['type']?.isNotEmpty == true &&
-        details['hullNumber']?.isNotEmpty == true &&
-        details['length']?.isNotEmpty == true &&
-        details['width']?.isNotEmpty == true;
-  }
+  Future<void> _generatePdf() async {
+    setState(() => _isGeneratingPdf = true);
 
-  Future<void> _previewPdf() async {
-    final pdf = await _generatePdf();
+    try {
+      // Generate PDF using PDF service
+      final pdfBytes = await PdfService.generateContractPdf(widget.contract);
 
-    await Printing.layoutPdf(
-      onLayout: (PdfPageFormat format) async => pdf.save(),
-    );
-  }
+      // Upload to Firebase Storage
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('contracts')
+          .child(widget.contract.id)
+          .child('generated_contract.pdf');
 
-  Future<pw.Document> _generatePdf() async {
-    final pdf = pw.Document();
+      final uploadTask = await storageRef.putData(pdfBytes);
+      final pdfUrl = await uploadTask.ref.getDownloadURL();
 
-    pdf.addPage(
-      pw.MultiPage(
-        pageFormat: PdfPageFormat.a4,
-        build: (pw.Context context) => [
-          pw.Header(
-            level: 0,
-            child: pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Text(
-                  'BOAT SALE CONTRACT',
-                  style: pw.TextStyle(
-                    fontSize: 24,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
-                ),
-                pw.Text(
-                  'DRAFT',
-                  style: pw.TextStyle(
-                    fontSize: 16,
-                    color: PdfColors.red,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
-                ),
-              ],
+      // Update contract with generated PDF URL
+      await context.read<ContractService>().updateContractPdfUrl(
+            widget.contract.id,
+            pdfUrl,
+          );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('PDF generated successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Reload contract data
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AdminContractReviewScreen(
+              contract: widget.contract.copyWith(generatedPdfUrl: pdfUrl),
             ),
           ),
-          pw.SizedBox(height: 20),
-          pw.Text(
-            'Contract ID: ${widget.contract.id}',
-            style: const pw.TextStyle(fontSize: 12),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error generating PDF: ${e.toString()}'),
+            backgroundColor: Colors.red,
           ),
-          pw.Text(
-            'Date: ${DateFormat('dd/MM/yyyy').format(widget.contract.saleDate)}',
-            style: const pw.TextStyle(fontSize: 12),
-          ),
-          pw.SizedBox(height: 30),
-
-          // Contract content would be generated here
-          pw.Text(
-              'This is a preview of the contract that will be generated upon approval.'),
-          pw.SizedBox(height: 20),
-          pw.Text('The final PDF will include:'),
-          pw.Bullet(text: 'All party information'),
-          pw.Bullet(text: 'Complete boat details'),
-          pw.Bullet(text: 'Sale terms and conditions'),
-          pw.Bullet(text: 'Digital signatures'),
-          pw.Bullet(text: 'Official government stamp'),
-        ],
-      ),
-    );
-
-    return pdf;
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isGeneratingPdf = false);
+      }
+    }
   }
 
-  Future<void> _approveContract() async {
+  Future<void> _markAsSentToDepartment() async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Approve Contract'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('By approving this contract, you confirm that:'),
-            const SizedBox(height: 12),
-            const Text('• All information has been verified'),
-            const Text('• All legal requirements are met'),
-            const Text('• The contract is ready for finalization'),
-            const SizedBox(height: 16),
-            const Text(
-              'Your official stamp will be added to the document.',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ],
+        title: const Text('Confirm Submission'),
+        content: const Text(
+          'Have you submitted the contract to the Transportation Department?',
         ),
         actions: [
           TextButton(
@@ -349,19 +422,74 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-            child: const Text('Confirm Approval'),
+            child: const Text('Yes, Submitted'),
           ),
         ],
       ),
     );
 
     if (confirmed == true) {
-      setState(() => _isApproving = true);
+      setState(() => _isMarkingAsSent = true);
 
       try {
-        await context.read<ContractService>().approveContract(
+        await context.read<ContractService>().markContractAsSentToDepartment(
               widget.contract.id,
+              context.read<AuthService>().currentUser!.uid,
+            );
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Contract marked as sent to department'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pop(context);
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() => _isMarkingAsSent = false);
+        }
+      }
+    }
+  }
+
+  Future<void> _uploadApprovedPdf() async {
+    try {
+      // Pick PDF file
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+      );
+
+      if (result != null && result.files.single.path != null) {
+        setState(() => _isUploadingApproval = true);
+
+        final file = File(result.files.single.path!);
+
+        // Upload to Firebase Storage
+        final storageRef = FirebaseStorage.instance
+            .ref()
+            .child('contracts')
+            .child(widget.contract.id)
+            .child('department_approved.pdf');
+
+        final uploadTask = await storageRef.putFile(file);
+        final approvedPdfUrl = await uploadTask.ref.getDownloadURL();
+
+        // Update contract with approved PDF
+        await context.read<ContractService>().uploadDepartmentApprovedPdf(
+              widget.contract.id,
+              approvedPdfUrl,
               context.read<AuthService>().currentUser!.uid,
             );
 
@@ -370,12 +498,15 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
             context: context,
             barrierDismissible: false,
             builder: (context) => AlertDialog(
-              icon:
-                  const Icon(Icons.check_circle, color: Colors.green, size: 64),
-              title: const Text('Contract Approved'),
+              icon: const Icon(
+                Icons.check_circle,
+                color: Colors.green,
+                size: 64,
+              ),
+              title: const Text('Contract Finalized'),
               content: const Text(
-                'The contract has been approved successfully. '
-                'All parties will be notified and can download the final document.',
+                'The department-approved PDF has been uploaded successfully. '
+                'All parties have been notified and can now download the final contract.',
               ),
               actions: [
                 TextButton(
@@ -389,113 +520,28 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
             ),
           );
         }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error: ${e.toString()}'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      } finally {
-        if (mounted) {
-          setState(() => _isApproving = false);
-        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error uploading PDF: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isUploadingApproval = false);
       }
     }
   }
 
-  Future<void> _rejectContract() async {
-    final reason = await showDialog<String>(
-      context: context,
-      builder: (context) => _RejectContractDialog(),
-    );
-
-    if (reason != null && reason.isNotEmpty) {
-      setState(() => _isRejecting = true);
-
-      try {
-        await context.read<ContractService>().cancelContract(
-              widget.contract.id,
-              'Admin rejection: $reason',
-            );
-
-        if (mounted) {
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Contract rejected'),
-              backgroundColor: Colors.orange,
-            ),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error: ${e.toString()}'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      } finally {
-        if (mounted) {
-          setState(() => _isRejecting = false);
-        }
-      }
-    }
-  }
-}
-
-class _RejectContractDialog extends StatefulWidget {
-  @override
-  State<_RejectContractDialog> createState() => _RejectContractDialogState();
-}
-
-class _RejectContractDialogState extends State<_RejectContractDialog> {
-  final _reasonController = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Reject Contract'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text(
-            'Please provide a reason for rejecting this contract. '
-            'All parties will be notified.',
-            style: TextStyle(color: Colors.grey),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _reasonController,
-            decoration: const InputDecoration(
-              labelText: 'Rejection reason',
-              hintText: 'Enter detailed reason',
-            ),
-            maxLines: 3,
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
-        ),
-        ElevatedButton(
-          onPressed: () => Navigator.pop(context, _reasonController.text),
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-          child: const Text('Reject'),
-        ),
-      ],
-    );
-  }
-
-  @override
-  void dispose() {
-    _reasonController.dispose();
-    super.dispose();
+  void _downloadPdf(String pdfUrl) {
+    // Use the download service to download PDF
+    context.read<ContractService>().downloadPdf(
+          pdfUrl,
+          'contract_${widget.contract.contractNumber}.pdf',
+        );
   }
 }

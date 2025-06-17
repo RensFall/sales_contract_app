@@ -67,7 +67,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       children: [
                         const Text('Boat:'),
                         Text(
-                          widget.contract.boatDetails['type'] ?? 'Unknown',
+                          widget.contract.boatDetails
+                              .toString(), // could be wrong heere
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ],

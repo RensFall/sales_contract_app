@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:convert';
+import 'dart:html' as html;
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:url_launcher/url_launcher.dart';
 import '../model/contract_model.dart';
 
 class ContractService extends ChangeNotifier {
@@ -26,9 +29,11 @@ class ContractService extends ChangeNotifier {
       Query query = _firestore.collection('contracts');
 
       if (userType == 'admin') {
-        // Admin sees contracts pending approval (after payment)
-        query = query.where('status',
-            isEqualTo: ContractStatus.pendingApproval.index);
+        // Admin sees contracts pending department approval
+        query = query.where('status', whereIn: [
+          ContractStatus.pendingApproval.index,
+          ContractStatus.pendingDepartment.index
+        ]);
       } else {
         // Regular users see contracts they're involved in
         query = query.where('participants', arrayContains: userId);
@@ -53,7 +58,9 @@ class ContractService extends ChangeNotifier {
   void _filterContracts(String userId, String userType) {
     if (userType == 'admin') {
       _pendingApprovals = _contracts
-          .where((c) => c.status == ContractStatus.pendingApproval)
+          .where((c) =>
+              c.status == ContractStatus.pendingApproval ||
+              c.status == ContractStatus.pendingDepartment)
           .toList();
     } else {
       // Pending signatures - contracts where user hasn't signed yet
@@ -77,8 +84,11 @@ class ContractService extends ChangeNotifier {
     required String sellerId,
     required String buyerId,
     required List<String> witnessIds,
-    required Map<String, dynamic> boatDetails,
+    required Map<String, dynamic> sellerDetails,
+    required Map<String, dynamic> buyerDetails,
+    required BoatDetails boatDetails,
     required double saleAmount,
+    required String saleAmountText,
     required String paymentMethod,
     required Map<String, dynamic> additionalTerms,
     required String saleLocation,
@@ -86,6 +96,7 @@ class ContractService extends ChangeNotifier {
   }) async {
     try {
       final contractId = _firestore.collection('contracts').doc().id;
+      final contractNumber = await _generateContractNumber();
 
       // Add seller signature automatically
       final sellerSignature = {
@@ -93,25 +104,29 @@ class ContractService extends ChangeNotifier {
           userId: sellerId,
           signedAt: DateTime.now(),
           signatureUrl: 'auto_signed', // Seller auto-signs on creation
-          isVerified: true,
+          agreedToTerms: true,
         )
       };
 
-      final contract = ContractModel(
-        id: contractId,
-        sellerId: sellerId,
-        buyerId: buyerId,
-        witnessIds: witnessIds,
-        status: ContractStatus.pendingSignatures,
-        createdAt: DateTime.now(),
-        boatDetails: boatDetails,
-        saleAmount: saleAmount,
-        paymentMethod: paymentMethod,
-        additionalTerms: additionalTerms,
-        saleLocation: saleLocation,
-        saleDate: saleDate,
-        signatures: sellerSignature,
-      );
+      final contract = ContractModel.fromMap({
+        'id': contractId,
+        'contractNumber': contractNumber,
+        'sellerId': sellerId,
+        'buyerId': buyerId,
+        'witnessIds': witnessIds,
+        'status': ContractStatus.pendingSignatures.index,
+        'createdAt': DateTime.now().toIso8601String(),
+        'sellerDetails': sellerDetails,
+        'buyerDetails': buyerDetails,
+        'boatDetails': boatDetails.toMap(),
+        'saleAmount': saleAmount,
+        'saleAmountText': saleAmountText,
+        'paymentMethod': paymentMethod,
+        'additionalTerms': additionalTerms,
+        'saleLocation': saleLocation,
+        'saleDate': saleDate.toIso8601String(),
+        'signatures': sellerSignature.map((k, v) => MapEntry(k, v.toMap())),
+      });
 
       // Create contract document
       await _firestore
@@ -127,6 +142,23 @@ class ContractService extends ChangeNotifier {
       print('Error creating contract: $e');
       throw Exception('Failed to create contract: $e');
     }
+  }
+
+  Future<String> _generateContractNumber() async {
+    // Get the last contract number
+    final lastContract = await _firestore
+        .collection('contracts')
+        .orderBy('contractNumber', descending: true)
+        .limit(1)
+        .get();
+
+    if (lastContract.docs.isEmpty) {
+      return '0001';
+    }
+
+    final lastNumber =
+        int.parse(lastContract.docs.first.data()['contractNumber']);
+    return (lastNumber + 1).toString().padLeft(4, '0');
   }
 
   Future<void> _sendSignatureRequests(ContractModel contract) async {
@@ -151,8 +183,10 @@ class ContractService extends ChangeNotifier {
     await batch.commit();
   }
 
+  // Updated signature method without OTP
   Future<void> signContract(
-      String contractId, String userId, String signatureData) async {
+      String contractId, String userId, String signatureData,
+      {required bool agreedToTerms}) async {
     try {
       // Upload signature image
       final signatureUrl =
@@ -164,14 +198,13 @@ class ContractService extends ChangeNotifier {
           'userId': userId,
           'signedAt': DateTime.now().toIso8601String(),
           'signatureUrl': signatureUrl,
-          'isVerified': true,
+          'agreedToTerms': agreedToTerms,
         },
       });
 
       // Check if all signatures are collected
       await _checkAllSignatures(contractId);
 
-      // Reload contracts
       notifyListeners();
     } catch (e) {
       print('Error signing contract: $e');
@@ -273,9 +306,6 @@ class ContractService extends ChangeNotifier {
         'paymentData': paymentData.toMap(),
       });
 
-      // Generate initial PDF
-      await _generateSignedPdf(contractId);
-
       // Notify admins
       await _notifyAdminsForApproval(contractId);
 
@@ -284,15 +314,6 @@ class ContractService extends ChangeNotifier {
       print('Error processing payment: $e');
       throw Exception('Failed to process payment: $e');
     }
-  }
-
-  Future<void> _generateSignedPdf(String contractId) async {
-    // TODO: Implement PDF generation with all signatures
-    // This would generate a PDF with all the contract details and signatures
-    // For now, we'll use a placeholder
-    await _firestore.collection('contracts').doc(contractId).update({
-      'signedPdfUrl': 'placeholder_signed_pdf_url',
-    });
   }
 
   Future<void> _notifyAdminsForApproval(String contractId) async {
@@ -311,9 +332,9 @@ class ContractService extends ChangeNotifier {
         'userId': admin.id,
         'contractId': contractId,
         'type': 'approval_request',
-        'title': 'Contract Pending Approval',
+        'title': 'Contract Ready for Processing',
         'message':
-            'A paid contract is ready for your approval and digital stamp',
+            'A paid contract is ready for PDF generation and department submission',
         'createdAt': DateTime.now().toIso8601String(),
         'read': false,
       });
@@ -322,19 +343,70 @@ class ContractService extends ChangeNotifier {
     await batch.commit();
   }
 
+  // New methods for updated workflow
+  Future<void> updateContractPdfUrl(String contractId, String pdfUrl) async {
+    try {
+      await _firestore.collection('contracts').doc(contractId).update({
+        'generatedPdfUrl': pdfUrl,
+      });
+      notifyListeners();
+    } catch (e) {
+      print('Error updating PDF URL: $e');
+      throw Exception('Failed to update PDF URL: $e');
+    }
+  }
+
+  Future<void> markContractAsSentToDepartment(
+      String contractId, String adminId) async {
+    try {
+      await _firestore.collection('contracts').doc(contractId).update({
+        'status': ContractStatus.pendingDepartment.index,
+        'sentToDepartment': true,
+        'sentToDepartmentAt': DateTime.now().toIso8601String(),
+        'adminId': adminId,
+      });
+
+      // Notify all parties
+      await _notifyPartiesAboutDepartmentSubmission(contractId);
+
+      notifyListeners();
+    } catch (e) {
+      print('Error marking as sent to department: $e');
+      throw Exception('Failed to update contract status: $e');
+    }
+  }
+
+  Future<void> uploadDepartmentApprovedPdf(
+    String contractId,
+    String approvedPdfUrl,
+    String adminId,
+  ) async {
+    try {
+      await _firestore.collection('contracts').doc(contractId).update({
+        'status': ContractStatus.approved.index,
+        'departmentApprovedPdfUrl': approvedPdfUrl,
+        'departmentApprovedAt': DateTime.now().toIso8601String(),
+        'approvedAt': DateTime.now().toIso8601String(),
+        'finalPdfUrl': approvedPdfUrl, // Set the final PDF URL
+      });
+
+      // Notify all parties
+      await _notifyContractApproval(contractId);
+
+      notifyListeners();
+    } catch (e) {
+      print('Error uploading approved PDF: $e');
+      throw Exception('Failed to upload approved PDF: $e');
+    }
+  }
+
+  // Add the missing approveContract method
   Future<void> approveContract(String contractId, String adminId) async {
     try {
-      // Generate final PDF with admin stamp
-      final finalPdfUrl = await _generateFinalPdf(contractId, adminId);
-
       await _firestore.collection('contracts').doc(contractId).update({
         'status': ContractStatus.approved.index,
         'approvedAt': DateTime.now().toIso8601String(),
         'adminId': adminId,
-        'adminSignatureUrl':
-            'admin_digital_signature_url', // TODO: Implement actual signature
-        'adminStampUrl': 'official_stamp_url', // TODO: Implement actual stamp
-        'finalPdfUrl': finalPdfUrl,
       });
 
       // Notify all parties
@@ -347,14 +419,33 @@ class ContractService extends ChangeNotifier {
     }
   }
 
-  Future<String> _generateFinalPdf(String contractId, String adminId) async {
-    // TODO: Implement PDF generation with admin stamp
-    // This would:
-    // 1. Take the signed PDF
-    // 2. Add admin digital signature
-    // 3. Add official stamp
-    // 4. Upload to storage
-    return 'final_pdf_url_placeholder';
+  Future<void> _notifyPartiesAboutDepartmentSubmission(
+      String contractId) async {
+    final doc = await _firestore.collection('contracts').doc(contractId).get();
+    final contract = ContractModel.fromMap({
+      ...doc.data()!,
+      'id': doc.id,
+    });
+
+    final participants = contract.participants;
+    final batch = _firestore.batch();
+
+    for (final userId in participants) {
+      final notificationRef = _firestore.collection('notifications').doc();
+      batch.set(notificationRef, {
+        'id': notificationRef.id,
+        'userId': userId,
+        'contractId': contractId,
+        'type': 'department_submission',
+        'title': 'Contract Submitted to Department',
+        'message':
+            'Your contract has been submitted to the Transportation Department for approval.',
+        'createdAt': DateTime.now().toIso8601String(),
+        'read': false,
+      });
+    }
+
+    await batch.commit();
   }
 
   Future<void> _notifyContractApproval(String contractId) async {
@@ -374,15 +465,42 @@ class ContractService extends ChangeNotifier {
         'userId': userId,
         'contractId': contractId,
         'type': 'contract_approved',
-        'title': 'Contract Approved',
+        'title': 'Contract Officially Approved',
         'message':
-            'Your boat sale contract has been officially approved. You can now download the final document.',
+            'Your boat sale contract has been approved by the Transportation Department. You can now download the final document.',
         'createdAt': DateTime.now().toIso8601String(),
         'read': false,
       });
     }
 
     await batch.commit();
+  }
+
+  // PDF Download method
+  Future<void> downloadPdf(String pdfUrl, String fileName) async {
+    try {
+      if (kIsWeb) {
+        // Web download
+        final anchor = html.AnchorElement(href: pdfUrl)
+          ..setAttribute('download', fileName)
+          ..style.display = 'none';
+
+        html.document.body?.children.add(anchor);
+        anchor.click();
+        html.document.body?.children.remove(anchor);
+      } else {
+        // Mobile download - use url_launcher
+        final uri = Uri.parse(pdfUrl);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        } else {
+          throw 'Could not launch $pdfUrl';
+        }
+      }
+    } catch (e) {
+      print('Error downloading PDF: $e');
+      throw Exception('Failed to download PDF: $e');
+    }
   }
 
   Future<void> cancelContract(String contractId, String reason) async {
@@ -432,286 +550,3 @@ class ContractService extends ChangeNotifier {
     };
   }
 }
-// import 'package:flutter/material.dart';
-// import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:firebase_storage/firebase_storage.dart';
-
-// import '../model/contract_model.dart';
-
-// class ContractService extends ChangeNotifier {
-//   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-//   final FirebaseStorage _storage = FirebaseStorage.instance;
-
-//   List<ContractModel> _contracts = [];
-//   List<ContractModel> get contracts => _contracts;
-
-//   List<ContractModel> _pendingSignatures = [];
-//   List<ContractModel> get pendingSignatures => _pendingSignatures;
-
-//   List<ContractModel> _pendingApprovals = [];
-//   List<ContractModel> get pendingApprovals => _pendingApprovals;
-
-//   Future<void> loadContracts(String userId, String userType) async {
-//     try {
-//       Query query = _firestore.collection('contracts');
-
-//       if (userType == 'admin') {
-//         query = query.where('status',
-//             isEqualTo: ContractStatus.pendingApproval.index);
-//       } else {
-//         query = query.where('participants', arrayContains: userId);
-//       }
-
-//       final snapshot = await query.get();
-//       _contracts = snapshot.docs
-//           .map((doc) =>
-//               ContractModel.fromMap(doc.data() as Map<String, dynamic>))
-//           .toList();
-
-//       _filterContracts(userId, userType);
-//       notifyListeners();
-//     } catch (e) {
-//       throw Exception('Failed to load contracts: $e');
-//     }
-//   }
-
-//   void _filterContracts(String userId, String userType) {
-//     if (userType == 'admin') {
-//       _pendingApprovals = _contracts
-//           .where((c) => c.status == ContractStatus.pendingApproval)
-//           .toList();
-//     } else {
-//       _pendingSignatures = _contracts
-//           .where((c) =>
-//               c.status == ContractStatus.pendingSignatures &&
-//               !c.signatures.containsKey(userId))
-//           .toList();
-//     }
-//   }
-
-//   Future<String> createContract({
-//     required String sellerId,
-//     required String buyerId,
-//     required List<String> witnessIds,
-//     required Map<String, dynamic> boatDetails,
-//     required double saleAmount,
-//     required String paymentMethod,
-//     required Map<String, dynamic> additionalTerms,
-//     required String saleLocation,
-//     required DateTime saleDate,
-//   }) async {
-//     try {
-//       final contractId = _firestore.collection('contracts').doc().id;
-
-//       final contract = ContractModel(
-//         id: contractId,
-//         sellerId: sellerId,
-//         buyerId: buyerId,
-//         witnessIds: witnessIds,
-//         status: ContractStatus.draft,
-//         createdAt: DateTime.now(),
-//         boatDetails: boatDetails,
-//         saleAmount: saleAmount,
-//         paymentMethod: paymentMethod,
-//         additionalTerms: additionalTerms,
-//         saleLocation: saleLocation,
-//         saleDate: saleDate,
-//         signatures: {},
-//       );
-
-//       await _firestore
-//           .collection('contracts')
-//           .doc(contractId)
-//           .set(contract.toMap());
-
-//       // Send signature requests
-//       await _sendSignatureRequests(contract);
-
-//       return contractId;
-//     } catch (e) {
-//       throw Exception('Failed to create contract: $e');
-//     }
-//   }
-
-//   Future<void> _sendSignatureRequests(ContractModel contract) async {
-//     // Send notifications to buyer and witnesses
-//     final batch = _firestore.batch();
-
-//     // Update contract status
-//     batch.update(
-//       _firestore.collection('contracts').doc(contract.id),
-//       {'status': ContractStatus.pendingSignatures.index},
-//     );
-
-//     // Create notifications
-//     final participants = [contract.buyerId, ...contract.witnessIds];
-//     for (final userId in participants) {
-//       final notificationRef = _firestore.collection('notifications').doc();
-//       batch.set(notificationRef, {
-//         'id': notificationRef.id,
-//         'userId': userId,
-//         'contractId': contract.id,
-//         'type': 'signature_request',
-//         'title': 'New Contract Signature Request',
-//         'message': 'You have been requested to sign a boat sale contract',
-//         'createdAt': DateTime.now().toIso8601String(),
-//         'read': false,
-//       });
-//     }
-
-//     await batch.commit();
-//   }
-
-//   Future<void> signContract(
-//       String contractId, String userId, String signatureData) async {
-//     try {
-//       // Upload signature image
-//       final signatureUrl =
-//           await _uploadSignature(contractId, userId, signatureData);
-
-//       // Update contract with signature
-//       await _firestore.collection('contracts').doc(contractId).update({
-//         'signatures.$userId': {
-//           'userId': userId,
-//           'signedAt': DateTime.now().toIso8601String(),
-//           'signatureUrl': signatureUrl,
-//           'isVerified': true,
-//         },
-//       });
-
-//       // Check if all signatures are collected
-//       await _checkAllSignatures(contractId);
-//     } catch (e) {
-//       throw Exception('Failed to sign contract: $e');
-//     }
-//   }
-
-//   Future<String> _uploadSignature(
-//       String contractId, String userId, String signatureData) async {
-//     // Convert signature data to file and upload
-//     // This is a placeholder - implement actual signature upload
-//     return 'signature_url_placeholder';
-//   }
-
-//   Future<void> _checkAllSignatures(String contractId) async {
-//     final doc = await _firestore.collection('contracts').doc(contractId).get();
-//     final contract = ContractModel.fromMap(doc.data()!);
-
-//     final requiredSignatures = [
-//       contract.sellerId,
-//       contract.buyerId,
-//       ...contract.witnessIds
-//     ];
-//     final hasAllSignatures = requiredSignatures
-//         .every((userId) => contract.signatures.containsKey(userId));
-
-//     if (hasAllSignatures) {
-//       await _firestore.collection('contracts').doc(contractId).update({
-//         'status': ContractStatus.signed.index,
-//         'signedAt': DateTime.now().toIso8601String(),
-//       });
-
-//       // Generate PDF and submit for admin approval
-//       await _generateAndSubmitForApproval(contract);
-//     }
-//   }
-
-//   Future<void> _generateAndSubmitForApproval(ContractModel contract) async {
-//     // Generate PDF with all signatures
-//     // Upload to storage
-//     // Update contract status to pendingApproval
-
-//     await _firestore.collection('contracts').doc(contract.id).update({
-//       'status': ContractStatus.pendingApproval.index,
-//     });
-
-//     // Notify admins
-//     await _notifyAdmins(contract.id);
-//   }
-
-//   Future<void> _notifyAdmins(String contractId) async {
-//     final admins = await _firestore
-//         .collection('users')
-//         .where('userType', isEqualTo: 'admin')
-//         .get();
-
-//     final batch = _firestore.batch();
-
-//     for (final admin in admins.docs) {
-//       final notificationRef = _firestore.collection('notifications').doc();
-//       batch.set(notificationRef, {
-//         'id': notificationRef.id,
-//         'userId': admin.id,
-//         'contractId': contractId,
-//         'type': 'approval_request',
-//         'title': 'Contract Pending Approval',
-//         'message': 'A new contract is ready for your approval',
-//         'createdAt': DateTime.now().toIso8601String(),
-//         'read': false,
-//       });
-//     }
-
-//     await batch.commit();
-//   }
-
-//   Future<void> approveContract(String contractId, String adminId) async {
-//     try {
-//       // Generate final PDF with admin stamp
-//       final finalPdfUrl = await _generateFinalPdf(contractId);
-
-//       await _firestore.collection('contracts').doc(contractId).update({
-//         'status': ContractStatus.approved.index,
-//         'approvedAt': DateTime.now().toIso8601String(),
-//         'adminId': adminId,
-//         'finalPdfUrl': finalPdfUrl,
-//       });
-
-//       // Notify all parties
-//       await _notifyContractApproval(contractId);
-//     } catch (e) {
-//       throw Exception('Failed to approve contract: $e');
-//     }
-//   }
-
-//   Future<String> _generateFinalPdf(String contractId) async {
-//     // Generate PDF with admin stamp
-//     // Upload to storage
-//     return 'final_pdf_url_placeholder';
-//   }
-
-//   Future<void> _notifyContractApproval(String contractId) async {
-//     final doc = await _firestore.collection('contracts').doc(contractId).get();
-//     final contract = ContractModel.fromMap(doc.data()!);
-
-//     final participants = [
-//       contract.sellerId,
-//       contract.buyerId,
-//       ...contract.witnessIds
-//     ];
-//     final batch = _firestore.batch();
-
-//     for (final userId in participants) {
-//       final notificationRef = _firestore.collection('notifications').doc();
-//       batch.set(notificationRef, {
-//         'id': notificationRef.id,
-//         'userId': userId,
-//         'contractId': contractId,
-//         'type': 'contract_approved',
-//         'title': 'Contract Approved',
-//         'message': 'Your boat sale contract has been approved and finalized',
-//         'createdAt': DateTime.now().toIso8601String(),
-//         'read': false,
-//       });
-//     }
-
-//     await batch.commit();
-//   }
-
-//   Future<void> cancelContract(String contractId, String reason) async {
-//     await _firestore.collection('contracts').doc(contractId).update({
-//       'status': ContractStatus.cancelled.index,
-//       'cancelledAt': DateTime.now().toIso8601String(),
-//       'cancellationReason': reason,
-//     });
-//   }
-// }

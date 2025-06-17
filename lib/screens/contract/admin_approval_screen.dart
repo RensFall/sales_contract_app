@@ -88,7 +88,7 @@ class _AdminApprovalScreenState extends State<AdminApprovalScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Contract #${contract.id.substring(0, 8)}',
+                  'Contract #${contract.contractNumber}',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -98,13 +98,13 @@ class _AdminApprovalScreenState extends State<AdminApprovalScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.purple.withOpacity(0.2),
+                    color: _getStatusColor(contract.status).withOpacity(0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Text(
-                    'Review Required',
+                  child: Text(
+                    _getStatusText(contract.status),
                     style: TextStyle(
-                      color: Colors.purple,
+                      color: _getStatusColor(contract.status),
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -114,7 +114,7 @@ class _AdminApprovalScreenState extends State<AdminApprovalScreen> {
             ),
             const SizedBox(height: 12),
             _buildInfoRow(Icons.directions_boat,
-                contract.boatDetails['type'] ?? 'Unknown'),
+                '${contract.boatDetails.vesselName} - ${contract.boatDetails.workNature}'),
             const SizedBox(height: 4),
             _buildInfoRow(Icons.payments,
                 'SAR ${NumberFormat('#,###').format(contract.saleAmount)}'),
@@ -124,35 +124,48 @@ class _AdminApprovalScreenState extends State<AdminApprovalScreen> {
             const SizedBox(height: 4),
             _buildInfoRow(Icons.check_circle,
                 '${contract.signatures.length} signatures verified'),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AdminContractReviewScreen(
-                            contract: contract,
-                          ),
+            if (contract.status == ContractStatus.pendingDepartment) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline,
+                        size: 16, color: Colors.orange[700]),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Awaiting department approval',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.orange[700],
                         ),
-                      );
-                    },
-                    child: const Text('Review'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => _approveContract(contract),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
+                      ),
                     ),
-                    child: const Text('Quick Approve'),
-                  ),
+                  ],
                 ),
-              ],
+              ),
+            ],
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AdminContractReviewScreen(
+                        contract: contract,
+                      ),
+                    ),
+                  );
+                },
+                child: const Text('Review Contract'),
+              ),
             ),
           ],
         ),
@@ -165,62 +178,40 @@ class _AdminApprovalScreenState extends State<AdminApprovalScreen> {
       children: [
         Icon(icon, size: 16, color: Colors.grey),
         const SizedBox(width: 8),
-        Text(
-          text,
-          style: const TextStyle(color: Colors.grey),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(color: Colors.grey),
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
       ],
     );
   }
 
-  Future<void> _approveContract(ContractModel contract) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Approve Contract'),
-        content: const Text(
-          'Are you sure you want to approve this contract? '
-          'Your digital stamp will be added to the final document.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-            child: const Text('Approve'),
-          ),
-        ],
-      ),
-    );
+  Color _getStatusColor(ContractStatus status) {
+    switch (status) {
+      case ContractStatus.pendingApproval:
+        return Colors.purple;
+      case ContractStatus.pendingDepartment:
+        return Colors.orange;
+      case ContractStatus.approved:
+        return Colors.green;
+      default:
+        return Colors.grey;
+    }
+  }
 
-    if (confirmed == true) {
-      try {
-        await context.read<ContractService>().approveContract(
-              contract.id,
-              context.read<AuthService>().currentUser!.uid,
-            );
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Contract approved successfully'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error: ${e.toString()}'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
+  String _getStatusText(ContractStatus status) {
+    switch (status) {
+      case ContractStatus.pendingApproval:
+        return 'Review Required';
+      case ContractStatus.pendingDepartment:
+        return 'Sent to Department';
+      case ContractStatus.approved:
+        return 'Approved';
+      default:
+        return 'Unknown';
     }
   }
 }

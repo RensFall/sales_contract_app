@@ -121,7 +121,9 @@ class _PendingSignaturesScreenState extends State<PendingSignaturesScreen> {
                 const Icon(Icons.directions_boat, size: 16, color: Colors.grey),
                 const SizedBox(width: 8),
                 Text(
-                  contract.boatDetails['type'] ?? 'Unknown',
+                  // COULD be wrong here !!
+                  (contract.boatDetails).toString(),
+                  // COULD be wrong here !!
                   style: const TextStyle(color: Colors.grey),
                 ),
               ],
