@@ -107,7 +107,9 @@ class ContractModel {
       sellerDetails: Map<String, dynamic>.from(map['sellerDetails'] ?? {}),
       buyerDetails: Map<String, dynamic>.from(map['buyerDetails'] ?? {}),
       boatDetails: BoatDetails.fromMap(map['boatDetails'] ?? {}),
-      saleAmount: (map['saleAmount'] ?? 0).toDouble(),
+      saleAmount: map['saleAmount'] is String
+          ? double.tryParse(map['saleAmount']) ?? 0.0
+          : (map['saleAmount'] ?? 0).toDouble(),
       saleAmountText: map['saleAmountText'] ?? '',
       paymentMethod: map['paymentMethod'] ?? '',
       additionalTerms: Map<String, dynamic>.from(map['additionalTerms'] ?? {}),
@@ -256,14 +258,24 @@ class BoatDetails {
           ? DateTime.parse(map['registrationDate'])
           : null,
       workNature: map['workNature'] ?? 'نقل ركاب',
-      length: (map['length'] ?? 0).toDouble(),
-      width: (map['width'] ?? 0).toDouble(),
-      depth: (map['depth'] ?? 0).toDouble(),
-      capacity: (map['capacity'] ?? 0).toDouble(),
+      length: map['length'] is String
+          ? double.tryParse(map['length']) ?? 0.0
+          : (map['length'] ?? 0).toDouble(),
+      width: map['width'] is String
+          ? double.tryParse(map['width']) ?? 0.0
+          : (map['width'] ?? 0).toDouble(),
+      depth: map['depth'] is String
+          ? double.tryParse(map['depth']) ?? 0.0
+          : (map['depth'] ?? 0).toDouble(),
+      capacity: map['capacity'] is String
+          ? double.tryParse(map['capacity']) ?? 0.0
+          : (map['capacity'] ?? 0).toDouble(),
       buildMaterial: map['buildMaterial'] ?? '',
       workArea: map['workArea'] ?? '',
       hullNumber: map['hullNumber'] ?? '',
-      passengerCount: map['passengerCount'] ?? 0,
+      passengerCount: map['passengerCount'] is String
+          ? int.tryParse(map['passengerCount']) ?? 0
+          : map['passengerCount'] ?? 0,
       engines: (map['engines'] as List?)
               ?.map((e) => EngineDetail.fromMap(e))
               .toList() ??
@@ -376,27 +388,28 @@ class EquipmentDetails {
 class SignatureData {
   final String userId;
   final DateTime signedAt;
-  final String signatureUrl;
-  final bool agreedToTerms; // New field - replaces isVerified
-
-  // Add isVerified getter for backward compatibility
-  bool get isVerified => agreedToTerms;
+  final String? signatureImageUrl; // URL to the signature image
+  final String? ipAddress;
+  final String? deviceInfo;
+  final bool isVerified;
 
   SignatureData({
     required this.userId,
     required this.signedAt,
-    required this.signatureUrl,
-    required this.agreedToTerms,
+    this.signatureImageUrl,
+    this.ipAddress,
+    this.deviceInfo,
+    required this.isVerified,
   });
 
   factory SignatureData.fromMap(Map<String, dynamic> map) {
     return SignatureData(
       userId: map['userId'] ?? '',
       signedAt: DateTime.parse(map['signedAt']),
-      signatureUrl: map['signatureUrl'] ?? '',
-      agreedToTerms: map['agreedToTerms'] ??
-          map['isVerified'] ??
-          false, // Support both old and new field names
+      signatureImageUrl: map['signatureImageUrl'] ?? map['signatureUrl'],
+      ipAddress: map['ipAddress'],
+      deviceInfo: map['deviceInfo'],
+      isVerified: map['isVerified'] ?? map['agreedToTerms'] ?? false,
     );
   }
 
@@ -404,58 +417,52 @@ class SignatureData {
     return {
       'userId': userId,
       'signedAt': signedAt.toIso8601String(),
-      'signatureUrl': signatureUrl,
-      'agreedToTerms': agreedToTerms,
+      'signatureImageUrl': signatureImageUrl,
+      'ipAddress': ipAddress,
+      'deviceInfo': deviceInfo,
+      'isVerified': isVerified,
     };
   }
 }
 
 class PaymentData {
-  final String paymentId;
   final String transactionId;
   final double amount;
-  final String currency;
-  final String status;
-  final DateTime paidAt;
   final String paymentMethod;
-  final Map<String, dynamic>? metadata;
+  final String? receiptUrl;
+  final DateTime paidAt;
+  final bool isVerified;
 
   PaymentData({
-    required this.paymentId,
     required this.transactionId,
     required this.amount,
-    required this.currency,
-    required this.status,
-    required this.paidAt,
     required this.paymentMethod,
-    this.metadata,
+    this.receiptUrl,
+    required this.paidAt,
+    required this.isVerified,
   });
 
   factory PaymentData.fromMap(Map<String, dynamic> map) {
     return PaymentData(
-      paymentId: map['paymentId'] ?? '',
       transactionId: map['transactionId'] ?? '',
-      amount: (map['amount'] ?? 0).toDouble(),
-      currency: map['currency'] ?? 'SAR',
-      status: map['status'] ?? '',
-      paidAt: DateTime.parse(map['paidAt']),
+      amount: map['amount'] is String
+          ? double.tryParse(map['amount']) ?? 0.0
+          : (map['amount'] ?? 0).toDouble(),
       paymentMethod: map['paymentMethod'] ?? '',
-      metadata: map['metadata'] != null
-          ? Map<String, dynamic>.from(map['metadata'])
-          : null,
+      receiptUrl: map['receiptUrl'],
+      paidAt: DateTime.parse(map['paidAt']),
+      isVerified: map['isVerified'] ?? false,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'paymentId': paymentId,
       'transactionId': transactionId,
       'amount': amount,
-      'currency': currency,
-      'status': status,
-      'paidAt': paidAt.toIso8601String(),
       'paymentMethod': paymentMethod,
-      'metadata': metadata,
+      'receiptUrl': receiptUrl,
+      'paidAt': paidAt.toIso8601String(),
+      'isVerified': isVerified,
     };
   }
 }

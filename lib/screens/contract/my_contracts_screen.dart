@@ -137,7 +137,7 @@ class _MyContractsScreenState extends State<MyContractsScreen>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Contract #${contract.id.substring(0, 8)}',
+                    'Contract #${contract.contractNumber}',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -154,7 +154,7 @@ class _MyContractsScreenState extends State<MyContractsScreen>
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      '${contract.boatDetails.toString()} - ${contract.boatDetails.toString()}', // the cast here could be wrong
+                      '${contract.boatDetails.vesselName} - ${contract.boatDetails.hullNumber}',
                       style: const TextStyle(color: Colors.grey),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -224,6 +224,14 @@ class _MyContractsScreenState extends State<MyContractsScreen>
         color = Colors.blue;
         text = 'Signed';
         break;
+      case ContractStatus.pendingPayment:
+        color = Colors.blue;
+        text = 'Payment Required';
+        break;
+      case ContractStatus.pendingDepartment:
+        color = Colors.purple;
+        text = 'Dept. Review';
+        break;
       case ContractStatus.pendingApproval:
         color = Colors.purple;
         text = 'In Review';
@@ -236,19 +244,14 @@ class _MyContractsScreenState extends State<MyContractsScreen>
         color = Colors.red;
         text = 'Cancelled';
         break;
-      case ContractStatus.pendingPayment:
-        // TODO: Handle this case.
-        throw UnimplementedError();
-      case ContractStatus.pendingDepartment:
-        // TODO: Handle this case.
-        throw UnimplementedError();
     }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: color,
+        color: color.withOpacity(0.2),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color),
       ),
       child: Text(
         text,

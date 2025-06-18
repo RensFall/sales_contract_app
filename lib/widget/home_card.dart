@@ -20,7 +20,6 @@ class HomeCard extends StatelessWidget {
   });
 
   @override
-  @override
   Widget build(BuildContext context) {
     return Material(
       color: Colors.white,
@@ -30,9 +29,8 @@ class HomeCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
         child: Container(
-          padding: const EdgeInsets.all(16), // Reduced padding
-          constraints:
-              const BoxConstraints(minHeight: 120), // Ensure minimum height
+          padding: const EdgeInsets.all(16),
+          constraints: const BoxConstraints(minHeight: 120),
           child: Stack(
             children: [
               Row(
@@ -43,7 +41,7 @@ class HomeCard extends StatelessWidget {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.1), // Lighter background
+                      color: color.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
@@ -60,22 +58,28 @@ class HomeCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          title,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1A3A6F),
+                        Flexible(
+                          child: Text(
+                            title,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1A3A6F),
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 2, // Allow text wrapping
-                          overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          subtitle,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
+                        Flexible(
+                          child: Text(
+                            subtitle,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
@@ -98,7 +102,7 @@ class HomeCard extends StatelessWidget {
                       badge!,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 10, // Smaller font
+                        fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
