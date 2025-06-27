@@ -16,7 +16,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
   final _fullNameController = TextEditingController();
   final _idNumberController = TextEditingController();
   final _mobileController = TextEditingController();
@@ -142,38 +141,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-
-                // Confirm Password Field
-                TextFormField(
-                  controller: _confirmPasswordController,
-                  obscureText: _obscureConfirmPassword,
-                  decoration: InputDecoration(
-                    labelText: "Confirm Password".tr(),
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscureConfirmPassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                      ),
-                      onPressed: () {
-                        setState(() =>
-                            _obscureConfirmPassword = !_obscureConfirmPassword);
-                      },
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value?.isEmpty ?? true) {
-                      return "Please confirm your password".tr();
-                    }
-                    if (value != _passwordController.text) {
-                      return "Passwords do not match".tr();
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-
                 // ID Number Field
                 TextFormField(
                   controller: _idNumberController,
@@ -395,7 +362,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     // Dispose all controllers
     _emailController.dispose();
     _passwordController.dispose();
-    _confirmPasswordController.dispose();
     _fullNameController.dispose();
     _idNumberController.dispose();
     _mobileController.dispose();

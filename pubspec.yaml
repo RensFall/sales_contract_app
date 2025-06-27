@@ -51,25 +51,14 @@ dependencies:
 flutter:
   uses-material-design: true
   
-  # # Add Arabic fonts
+# Add translation files
+  assets:
+    - assets/lang/
+  
+  # Add Arabic fonts
   fonts:
     - family: Almarai
       fonts:
         - asset: assets/fonts/Almarai-Regular.ttf
         - asset: assets/fonts/Almarai-Bold.ttf
           weight: 700
-  
-  # Add custom fonts if needed
-  # fonts:
-  #   - family: Almarai
-  #     fonts:
-  #       - asset: fonts/Almarai-Regular.ttf
-  #       - asset: fonts/Almarai-Bold.ttf
-  #         weight: 700
-  #       - asset: fonts/Almarai-Light.ttf
-  #         weight: 300
-
-  # Add any assets/images
-  # assets:
-  #   - assets/images/
-  #   - assets/icons/

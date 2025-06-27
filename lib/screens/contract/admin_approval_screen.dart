@@ -1,4 +1,5 @@
 // lib/screens/contracts/admin_approval_screen.dart
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -39,7 +40,7 @@ class _AdminApprovalScreenState extends State<AdminApprovalScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pending Approvals'),
+        title: Text("Pending Approvals").tr(),
       ),
       body: RefreshIndicator(
         onRefresh: _loadContracts,
@@ -55,7 +56,7 @@ class _AdminApprovalScreenState extends State<AdminApprovalScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'No contracts pending approval',
+                      "No contracts pending approval".tr(),
                       style: TextStyle(
                         color: Colors.grey[600],
                         fontSize: 16,
@@ -88,7 +89,7 @@ class _AdminApprovalScreenState extends State<AdminApprovalScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Contract #${contract.contractNumber}',
+                  "Contract #".tr() + "${contract.contractNumber}",
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -98,7 +99,7 @@ class _AdminApprovalScreenState extends State<AdminApprovalScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
-                    color: _getStatusColor(contract.status).withOpacity(0.2),
+                    color: _getStatusColor(contract.status),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -117,19 +118,19 @@ class _AdminApprovalScreenState extends State<AdminApprovalScreen> {
                 '${contract.boatDetails.vesselName} - ${contract.boatDetails.workNature}'),
             const SizedBox(height: 4),
             _buildInfoRow(Icons.payments,
-                'SAR ${NumberFormat('#,###').format(contract.saleAmount)}'),
+                "SAR" + "${NumberFormat('#,###').format(contract.saleAmount)}"),
             const SizedBox(height: 4),
             _buildInfoRow(Icons.calendar_today,
                 DateFormat('dd/MM/yyyy').format(contract.saleDate)),
             const SizedBox(height: 4),
             _buildInfoRow(Icons.check_circle,
-                '${contract.signatures.length} signatures verified'),
+                "${contract.signatures.length}" + "signatures verified".tr()),
             if (contract.status == ContractStatus.pendingDepartment) ...[
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
+                  color: Colors.orange,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -139,7 +140,7 @@ class _AdminApprovalScreenState extends State<AdminApprovalScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Awaiting department approval',
+                        "Awaiting department approval".tr(),
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.orange[700],
@@ -164,7 +165,7 @@ class _AdminApprovalScreenState extends State<AdminApprovalScreen> {
                     ),
                   );
                 },
-                child: const Text('Review Contract'),
+                child: Text("Review Contract".tr()),
               ),
             ),
           ],
@@ -205,13 +206,13 @@ class _AdminApprovalScreenState extends State<AdminApprovalScreen> {
   String _getStatusText(ContractStatus status) {
     switch (status) {
       case ContractStatus.pendingApproval:
-        return 'Review Required';
+        return "Review Required".tr();
       case ContractStatus.pendingDepartment:
-        return 'Sent to Department';
+        return "Sent to Department".tr();
       case ContractStatus.approved:
-        return 'Approved';
+        return "Approved".tr();
       default:
-        return 'Unknown';
+        return "Unknown".tr();
     }
   }
 }

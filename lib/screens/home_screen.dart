@@ -1,15 +1,16 @@
 // lib/screens/home_screen.dart
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../model/contract_model.dart';
-import '../services/auth_service.dart';
-import '../services/contract_service.dart';
-import '../widget/home_card.dart';
-import 'contract/admin_home_screen.dart';
-import 'contract/my_contracts_screen.dart';
-import 'contract/new_contract_screen.dart';
-import 'contract/pending_payment_screen.dart';
-import 'contract/pending_signatures_screen.dart';
+import "package:easy_localization/easy_localization.dart";
+import "package:flutter/material.dart";
+import "package:provider/provider.dart";
+import "../model/contract_model.dart";
+import "../services/auth_service.dart";
+import "../services/contract_service.dart";
+import "../widget/home_card.dart";
+import "contract/admin_home_screen.dart";
+import "contract/my_contracts_screen.dart";
+import "contract/new_contract_screen.dart";
+import "contract/pending_payment_screen.dart";
+import "contract/pending_signatures_screen.dart";
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -51,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text('Marine Contracts'),
+        title: Text("Marine Contracts".tr()),
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
@@ -61,31 +62,31 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           PopupMenuButton<String>(
             onSelected: (value) {
-              if (value == 'profile') {
+              if (value == "profile") {
                 // Navigate to profile
-              } else if (value == 'logout') {
+              } else if (value == "logout") {
                 auth.signOut();
-                Navigator.pushReplacementNamed(context, '/login');
+                Navigator.pushReplacementNamed(context, "/login");
               }
             },
             itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'profile',
+              PopupMenuItem(
+                value: "profile",
                 child: Row(
                   children: [
                     Icon(Icons.person_outline, size: 20),
                     SizedBox(width: 12),
-                    Text('Profile'),
+                    Text("Profile".tr()),
                   ],
                 ),
               ),
-              const PopupMenuItem(
-                value: 'logout',
+              PopupMenuItem(
+                value: "logout",
                 child: Row(
                   children: [
                     Icon(Icons.logout, size: 20),
                     SizedBox(width: 12),
-                    Text('Logout'),
+                    Text("Logout".tr()),
                   ],
                 ),
               ),
@@ -121,7 +122,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         auth.currentUser?.fullName
                                 .substring(0, 1)
                                 .toUpperCase() ??
-                            'U',
+                            "U",
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 24,
@@ -135,7 +136,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Welcome, ${auth.currentUser?.fullName ?? 'User'}',
+                            "Welcome".tr() +
+                                ", ${auth.currentUser?.fullName ?? "User"}",
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 18,
@@ -144,7 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'ID: ${auth.currentUser?.idNumber ?? ''}',
+                            "ID: ${auth.currentUser?.idNumber ?? ""}",
                             style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 14,
@@ -159,8 +161,8 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 24),
 
               // Quick Actions
-              const Text(
-                'Quick Actions',
+              Text(
+                "Quick Actions".tr(),
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -180,8 +182,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Everyone can create contracts now
                   HomeCard(
                     icon: Icons.add_box,
-                    title: 'New Contract',
-                    subtitle: 'Create a new sale contract',
+                    title: "New Contract".tr(),
+                    subtitle: "Create a new sale contract".tr(),
                     color: Colors.green,
                     onTap: () {
                       Navigator.push(
@@ -195,8 +197,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   HomeCard(
                     icon: Icons.pending_actions,
-                    title: 'Pending Signatures',
-                    subtitle: '${contracts.pendingSignatures.length} contracts',
+                    title: "Pending Signatures".tr(),
+                    subtitle: "${contracts.pendingSignatures.length}" +
+                        "contracts".tr(),
                     color: Colors.orange,
                     badge: contracts.pendingSignatures.length.toString(),
                     onTap: () {
@@ -211,8 +214,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   HomeCard(
                     icon: Icons.payment,
-                    title: 'Pending Payment',
-                    subtitle: '${contracts.pendingPayment.length} contracts',
+                    title: "Pending Payment".tr(),
+                    subtitle:
+                        "${contracts.pendingPayment.length}" "contracts".tr(),
                     color: Colors.amber,
                     badge: contracts.pendingPayment.length.toString(),
                     onTap: () {
@@ -227,8 +231,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   HomeCard(
                     icon: Icons.description,
-                    title: 'My Contracts',
-                    subtitle: 'View all contracts',
+                    title: "My Contracts".tr(),
+                    subtitle: "View all contracts".tr(),
                     color: Colors.blue,
                     onTap: () {
                       Navigator.push(
@@ -245,8 +249,8 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 32),
 
               // Recent Activity
-              const Text(
-                'Recent Activity',
+              Text(
+                "Recent Activity".tr(),
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -268,7 +272,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'No contracts yet',
+                          "No contracts yet".tr(),
                           style: TextStyle(
                             color: Colors.grey[600],
                             fontSize: 16,
@@ -300,7 +304,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         title: Text(
-                          'Contract #${contract.id.substring(0, 8)}',
+                          "Contract".tr() + "#${contract.id.substring(0, 8)}",
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         subtitle: Column(
@@ -314,8 +318,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             if (contract.status ==
                                 ContractStatus.pendingPayment)
-                              const Text(
-                                'Awaiting payment',
+                              Text(
+                                "Awaiting payment".tr(),
                                 style: TextStyle(fontSize: 12),
                               ),
                           ],
@@ -385,19 +389,19 @@ class _HomeScreenState extends State<HomeScreen> {
   String _getStatusText(ContractStatus status) {
     switch (status) {
       case ContractStatus.draft:
-        return 'Draft';
+        return "Draft".tr();
       case ContractStatus.pendingSignatures:
-        return 'Pending Signatures';
+        return "Pending Signatures".tr();
       case ContractStatus.signed:
-        return 'Signed - Awaiting Payment';
+        return "Signed - Awaiting Payment".tr();
       case ContractStatus.pendingPayment:
-        return 'Payment Required';
+        return "Payment Required".tr();
       case ContractStatus.pendingApproval:
-        return 'Pending Admin Approval';
+        return "Pending Admin Approval".tr();
       case ContractStatus.approved:
-        return 'Approved & Finalized';
+        return "Approved & Finalized".tr();
       case ContractStatus.cancelled:
-        return 'Cancelled';
+        return "Cancelled".tr();
       case ContractStatus.pendingDepartment:
         // TODO: Handle this case.
         throw UnimplementedError();
@@ -409,13 +413,13 @@ class _HomeScreenState extends State<HomeScreen> {
     final difference = now.difference(date);
 
     if (difference.inDays == 0) {
-      return 'Today';
+      return "Today".tr();
     } else if (difference.inDays == 1) {
-      return 'Yesterday';
+      return "Yesterday".tr();
     } else if (difference.inDays < 7) {
-      return '${difference.inDays} days ago';
+      return "${difference.inDays}+" + "days ago".tr();
     } else {
-      return '${date.day}/${date.month}/${date.year}';
+      return "${date.day}/${date.month}/${date.year}";
     }
   }
 }

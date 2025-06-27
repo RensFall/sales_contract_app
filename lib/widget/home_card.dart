@@ -41,7 +41,7 @@ class HomeCard extends StatelessWidget {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.1),
+                      color: color,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(

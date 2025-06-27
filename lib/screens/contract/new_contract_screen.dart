@@ -1,14 +1,15 @@
 // lib/screens/contracts/new_contract_screen.dart
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart';
-import '../../model/user_model.dart';
-import '../../model/contract_model.dart';
-import '../../services/auth_service.dart';
-import '../../services/contract_service.dart';
-import '../../widget/step_indicator.dart';
+import "package:easy_localization/easy_localization.dart";
+import "package:flutter/material.dart";
+import "package:flutter/services.dart";
+import "package:provider/provider.dart";
+import "package:cloud_firestore/cloud_firestore.dart";
+import "package:intl/intl.dart";
+import "../../model/user_model.dart";
+import "../../model/contract_model.dart";
+import "../../services/auth_service.dart";
+import "../../services/contract_service.dart";
+import "../../widget/step_indicator.dart";
 
 class NewContractScreen extends StatefulWidget {
   const NewContractScreen({super.key});
@@ -37,12 +38,12 @@ class _NewContractScreenState extends State<NewContractScreen> {
   // Boat details controllers - Updated for Arabic contract
   final _vesselNameController = TextEditingController();
   final _registrationNumberController = TextEditingController();
-  final _workNatureController = TextEditingController(text: 'نقل ركاب');
+  final _workNatureController = TextEditingController(text: "نقل ركاب");
   final _lengthController = TextEditingController();
   final _widthController = TextEditingController();
   final _depthController = TextEditingController();
   final _capacityController = TextEditingController();
-  final _buildMaterialController = TextEditingController(text: 'فايبر جلاس');
+  final _buildMaterialController = TextEditingController(text: "فايبر جلاس");
   final _workAreaController = TextEditingController();
   final _hullNumberController = TextEditingController();
   final _passengerCountController = TextEditingController();
@@ -61,7 +62,7 @@ class _NewContractScreenState extends State<NewContractScreen> {
   // Sale details
   final _saleAmountController = TextEditingController();
   final _saleAmountTextController = TextEditingController();
-  String _paymentMethod = 'Cash';
+  String _paymentMethod = "Bank Transfer";
   final _locationController = TextEditingController();
   DateTime _saleDate = DateTime.now();
   bool _includesEquipment = false;
@@ -81,14 +82,19 @@ class _NewContractScreenState extends State<NewContractScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('New Sale Contract'),
+        title: Text("New Sale Contract".tr()),
       ),
       body: Column(
         children: [
           StepIndicator(
             currentStep: _currentStep,
             totalSteps: 4,
-            titles: const ['Buyer', 'Boat Details', 'Sale Terms', 'Witnesses'],
+            titles: [
+              "Buyer".tr(),
+              "Boat Details".tr(),
+              "Sale Terms".tr(),
+              "Witnesses".tr()
+            ],
           ),
           Expanded(
             child: PageView(
@@ -135,16 +141,16 @@ class _NewContractScreenState extends State<NewContractScreen> {
 
       // Search by email
       final emailQuery = await _firestore
-          .collection('users')
-          .where('email', isGreaterThanOrEqualTo: query.toLowerCase())
-          .where('email', isLessThan: query.toLowerCase() + 'z')
+          .collection("users")
+          .where("email", isGreaterThanOrEqualTo: query.toLowerCase())
+          .where("email", isLessThan: query.toLowerCase() + "z")
           .limit(5)
           .get();
 
       // Search by ID number
       final idQuery = await _firestore
-          .collection('users')
-          .where('idNumber', isEqualTo: query)
+          .collection("users")
+          .where("idNumber", isEqualTo: query)
           .limit(5)
           .get();
 
@@ -152,14 +158,14 @@ class _NewContractScreenState extends State<NewContractScreen> {
       final Map<String, UserModel> usersMap = {};
 
       for (var doc in emailQuery.docs) {
-        final user = UserModel.fromMap({...doc.data(), 'uid': doc.id});
+        final user = UserModel.fromMap({...doc.data(), "uid": doc.id});
         if (user.uid != currentUserId) {
           usersMap[user.uid] = user;
         }
       }
 
       for (var doc in idQuery.docs) {
-        final user = UserModel.fromMap({...doc.data(), 'uid': doc.id});
+        final user = UserModel.fromMap({...doc.data(), "uid": doc.id});
         if (user.uid != currentUserId) {
           usersMap[user.uid] = user;
         }
@@ -179,7 +185,7 @@ class _NewContractScreenState extends State<NewContractScreen> {
         }
       });
     } catch (e) {
-      print('Error searching users: $e');
+      print("Error searching users: $e");
       setState(() {
         if (isBuyer) {
           _isSearchingBuyer = false;
@@ -198,8 +204,8 @@ class _NewContractScreenState extends State<NewContractScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Select Buyer',
+            Text(
+              "Select Buyer".tr(),
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -207,16 +213,16 @@ class _NewContractScreenState extends State<NewContractScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Search for registered buyers by email or ID number',
+            Text(
+              "Search for registered buyers by email or ID number".tr(),
               style: TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 24),
             TextFormField(
               controller: _buyerSearchController,
               decoration: InputDecoration(
-                labelText: 'Search Buyer',
-                hintText: 'Enter email or ID number',
+                labelText: "Search Buyer".tr(),
+                hintText: "Enter email or ID number".tr(),
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _isSearchingBuyer
                     ? const Padding(
@@ -258,7 +264,7 @@ class _NewContractScreenState extends State<NewContractScreen> {
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('ID: ${user.idNumber}'),
+                          Text("ID: ${user.idNumber}"),
                           Text(user.email,
                               style: const TextStyle(fontSize: 12)),
                         ],
@@ -283,7 +289,7 @@ class _NewContractScreenState extends State<NewContractScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
+                  color: Colors.green,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.green),
                 ),
@@ -306,7 +312,7 @@ class _NewContractScreenState extends State<NewContractScreen> {
                             ),
                           ),
                           Text(
-                            'ID: ${_selectedBuyer!.idNumber}',
+                            "ID: ${_selectedBuyer!.idNumber}",
                             style: const TextStyle(color: Colors.grey),
                           ),
                           Text(
@@ -340,8 +346,8 @@ class _NewContractScreenState extends State<NewContractScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Boat Information',
+            Text(
+              "Boat Information".tr(),
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -354,11 +360,12 @@ class _NewContractScreenState extends State<NewContractScreen> {
             TextFormField(
               controller: _vesselNameController,
               decoration: const InputDecoration(
-                labelText: 'Vessel Name (اسم الوحدة)',
+                labelText: "Vessel Name (اسم الوحدة)",
                 prefixIcon: Icon(Icons.directions_boat),
               ),
               validator: (value) {
-                if (value?.isEmpty ?? true) return 'Please enter vessel name';
+                if (value?.isEmpty ?? true)
+                  return "Please enter vessel name".tr();
                 return null;
               },
             ),
@@ -370,7 +377,7 @@ class _NewContractScreenState extends State<NewContractScreen> {
                   child: TextFormField(
                     controller: _registrationNumberController,
                     decoration: const InputDecoration(
-                      labelText: 'Registration No. (رقم القيد)',
+                      labelText: "Registration No. (رقم القيد)",
                       prefixIcon: Icon(Icons.app_registration),
                     ),
                   ),
@@ -380,11 +387,11 @@ class _NewContractScreenState extends State<NewContractScreen> {
                   child: TextFormField(
                     controller: _hullNumberController,
                     decoration: const InputDecoration(
-                      labelText: 'Hull Number (رقم الهيكل)',
+                      labelText: "Hull Number (رقم الهيكل)",
                       prefixIcon: Icon(Icons.numbers),
                     ),
                     validator: (value) {
-                      if (value?.isEmpty ?? true) return 'Required';
+                      if (value?.isEmpty ?? true) return "Required".tr();
                       return null;
                     },
                   ),
@@ -399,13 +406,13 @@ class _NewContractScreenState extends State<NewContractScreen> {
                 Expanded(
                   child: TextFormField(
                     controller: _lengthController,
-                    decoration: const InputDecoration(
-                      labelText: 'Length (m)',
+                    decoration: InputDecoration(
+                      labelText: "Length (m)".tr(),
                       prefixIcon: Icon(Icons.straighten),
                     ),
                     keyboardType: TextInputType.number,
                     validator: (value) {
-                      if (value?.isEmpty ?? true) return 'Required';
+                      if (value?.isEmpty ?? true) return "Required".tr();
                       return null;
                     },
                   ),
@@ -414,13 +421,13 @@ class _NewContractScreenState extends State<NewContractScreen> {
                 Expanded(
                   child: TextFormField(
                     controller: _widthController,
-                    decoration: const InputDecoration(
-                      labelText: 'Width (m)',
+                    decoration: InputDecoration(
+                      labelText: "Width (m)".tr(),
                       prefixIcon: Icon(Icons.width_normal),
                     ),
                     keyboardType: TextInputType.number,
                     validator: (value) {
-                      if (value?.isEmpty ?? true) return 'Required';
+                      if (value?.isEmpty ?? true) return "Required".tr();
                       return null;
                     },
                   ),
@@ -429,13 +436,13 @@ class _NewContractScreenState extends State<NewContractScreen> {
                 Expanded(
                   child: TextFormField(
                     controller: _depthController,
-                    decoration: const InputDecoration(
-                      labelText: 'Depth (m)',
+                    decoration: InputDecoration(
+                      labelText: "Depth (m)".tr(),
                       prefixIcon: Icon(Icons.height),
                     ),
                     keyboardType: TextInputType.number,
                     validator: (value) {
-                      if (value?.isEmpty ?? true) return 'Required';
+                      if (value?.isEmpty ?? true) return "Required".tr();
                       return null;
                     },
                   ),
@@ -449,13 +456,13 @@ class _NewContractScreenState extends State<NewContractScreen> {
                 Expanded(
                   child: TextFormField(
                     controller: _capacityController,
-                    decoration: const InputDecoration(
-                      labelText: 'Capacity (tons)',
+                    decoration: InputDecoration(
+                      labelText: "Capacity (tons)".tr(),
                       prefixIcon: Icon(Icons.scale),
                     ),
                     keyboardType: TextInputType.number,
                     validator: (value) {
-                      if (value?.isEmpty ?? true) return 'Required';
+                      if (value?.isEmpty ?? true) return "Required".tr();
                       return null;
                     },
                   ),
@@ -464,8 +471,8 @@ class _NewContractScreenState extends State<NewContractScreen> {
                 Expanded(
                   child: TextFormField(
                     controller: _passengerCountController,
-                    decoration: const InputDecoration(
-                      labelText: 'Passenger Count',
+                    decoration: InputDecoration(
+                      labelText: "Passenger Count".tr(),
                       prefixIcon: Icon(Icons.people),
                     ),
                     keyboardType: TextInputType.number,
@@ -477,15 +484,15 @@ class _NewContractScreenState extends State<NewContractScreen> {
 
             TextFormField(
               controller: _workAreaController,
-              decoration: const InputDecoration(
-                labelText: 'Work Area (منطقة العمل)',
+              decoration: InputDecoration(
+                labelText: "Work Area (منطقة العمل)",
                 prefixIcon: Icon(Icons.location_on),
               ),
             ),
 
             const SizedBox(height: 24),
-            const Text(
-              'Engine Details',
+            Text(
+              "Engine Details".tr(),
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
@@ -495,8 +502,8 @@ class _NewContractScreenState extends State<NewContractScreen> {
                   margin: const EdgeInsets.only(bottom: 8),
                   child: ListTile(
                     title: Text(
-                        '${entry.value.type} - ${entry.value.horsepower}HP'),
-                    subtitle: Text('SN: ${entry.value.serialNumber}'),
+                        "${entry.value.type} - ${entry.value.horsepower}HP"),
+                    subtitle: Text("SN: ${entry.value.serialNumber}"),
                     trailing: IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
                       onPressed: () {
@@ -509,12 +516,12 @@ class _NewContractScreenState extends State<NewContractScreen> {
             TextButton.icon(
               onPressed: _addEngine,
               icon: const Icon(Icons.add),
-              label: const Text('Add Engine'),
+              label: Text("Add Engine".tr()),
             ),
 
             const SizedBox(height: 24),
-            const Text(
-              'Equipment',
+            Text(
+              "Equipment".tr(),
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
@@ -524,8 +531,8 @@ class _NewContractScreenState extends State<NewContractScreen> {
                 Expanded(
                   child: TextFormField(
                     controller: _marineIdController,
-                    decoration: const InputDecoration(
-                      labelText: 'Marine ID',
+                    decoration: InputDecoration(
+                      labelText: "Marine ID".tr(),
                       prefixIcon: Icon(Icons.badge),
                     ),
                   ),
@@ -534,8 +541,8 @@ class _NewContractScreenState extends State<NewContractScreen> {
                 Expanded(
                   child: TextFormField(
                     controller: _callSignController,
-                    decoration: const InputDecoration(
-                      labelText: 'Call Sign',
+                    decoration: InputDecoration(
+                      labelText: "Call Sign".tr(),
                       prefixIcon: Icon(Icons.radio),
                     ),
                   ),
@@ -545,25 +552,25 @@ class _NewContractScreenState extends State<NewContractScreen> {
             const SizedBox(height: 16),
 
             CheckboxListTile(
-              title: const Text('AIS System'),
+              title: Text("AIS System".tr()),
               value: _hasAIS,
               onChanged: (value) => setState(() => _hasAIS = value!),
               controlAffinity: ListTileControlAffinity.leading,
             ),
             CheckboxListTile(
-              title: const Text('VHF Radio'),
+              title: Text("VHF Radio".tr()),
               value: _hasVHF,
               onChanged: (value) => setState(() => _hasVHF = value!),
               controlAffinity: ListTileControlAffinity.leading,
             ),
             CheckboxListTile(
-              title: const Text('EPIRB'),
+              title: Text("EPIRB"),
               value: _hasEPIRB,
               onChanged: (value) => setState(() => _hasEPIRB = value!),
               controlAffinity: ListTileControlAffinity.leading,
             ),
             CheckboxListTile(
-              title: const Text('Depth Finder'),
+              title: Text("Depth Finder".tr()),
               value: _hasDepthFinder,
               onChanged: (value) => setState(() => _hasDepthFinder = value!),
               controlAffinity: ListTileControlAffinity.leading,
@@ -583,27 +590,27 @@ class _NewContractScreenState extends State<NewContractScreen> {
         final serialController = TextEditingController();
 
         return AlertDialog(
-          title: const Text('Add Engine'),
+          title: Text("Add Engine".tr()),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: typeController,
-                decoration: const InputDecoration(
-                  labelText: 'Engine Type (e.g., Yamaha)',
+                decoration: InputDecoration(
+                  labelText: "Engine Type (e.g., Yamaha)".tr(),
                 ),
               ),
               TextField(
                 controller: horsepowerController,
-                decoration: const InputDecoration(
-                  labelText: 'Horsepower',
+                decoration: InputDecoration(
+                  labelText: "Horsepower".tr(),
                 ),
                 keyboardType: TextInputType.number,
               ),
               TextField(
                 controller: serialController,
-                decoration: const InputDecoration(
-                  labelText: 'Serial Number',
+                decoration: InputDecoration(
+                  labelText: "Serial Number".tr(),
                 ),
               ),
             ],
@@ -611,7 +618,7 @@ class _NewContractScreenState extends State<NewContractScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text("Cancel".tr()),
             ),
             ElevatedButton(
               onPressed: () {
@@ -628,7 +635,7 @@ class _NewContractScreenState extends State<NewContractScreen> {
                   Navigator.pop(context);
                 }
               },
-              child: const Text('Add'),
+              child: Text("Add".tr()),
             ),
           ],
         );
@@ -644,8 +651,8 @@ class _NewContractScreenState extends State<NewContractScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Sale Details',
+            Text(
+              "Sale Details".tr(),
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -655,15 +662,16 @@ class _NewContractScreenState extends State<NewContractScreen> {
             const SizedBox(height: 24),
             TextFormField(
               controller: _saleAmountController,
-              decoration: const InputDecoration(
-                labelText: 'Sale Amount (SAR)',
+              decoration: InputDecoration(
+                labelText: "Sale Amount (SAR)".tr(),
                 prefixIcon: Icon(Icons.payments),
-                prefixText: 'SAR ',
+                prefixText: "SAR".tr(),
               ),
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               validator: (value) {
-                if (value?.isEmpty ?? true) return 'Please enter sale amount';
+                if (value?.isEmpty ?? true)
+                  return "Please enter sale amount".tr();
                 return null;
               },
               onChanged: (value) {
@@ -675,41 +683,63 @@ class _NewContractScreenState extends State<NewContractScreen> {
             TextFormField(
               controller: _saleAmountTextController,
               decoration: const InputDecoration(
-                labelText: 'Amount in Arabic Text (المبلغ كتابة)',
-                hintText: 'e.g., ثلاثة آلاف ريال سعودي',
+                labelText: "Amount in Arabic Text (المبلغ كتابة)",
+                hintText: "e.g., ثلاثة آلاف ريال سعودي",
                 prefixIcon: Icon(Icons.text_fields),
               ),
               validator: (value) {
                 if (value?.isEmpty ?? true)
-                  return 'Please enter amount in text';
+                  return "Please enter amount in text".tr();
                 return null;
               },
             ),
             const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: _paymentMethod,
-              decoration: const InputDecoration(
-                labelText: 'Payment Method',
-                prefixIcon: Icon(Icons.payment),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey[300]!),
               ),
-              items: ['Cash', 'Bank Transfer', 'Installments']
-                  .map((method) => DropdownMenuItem(
-                        value: method,
-                        child: Text(method),
-                      ))
-                  .toList(),
-              onChanged: (value) => setState(() => _paymentMethod = value!),
+              child: Row(
+                children: [
+                  Icon(Icons.payment, color: Colors.grey[600]),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Payment Method".tr(),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "Bank Transfer".tr(),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _locationController,
-              decoration: const InputDecoration(
-                labelText: 'Sale Location',
-                hintText: 'City, District',
+              decoration: InputDecoration(
+                labelText: "Sale Location".tr(),
+                hintText: "City, District".tr(),
                 prefixIcon: Icon(Icons.location_on),
               ),
               validator: (value) {
-                if (value?.isEmpty ?? true) return 'Please enter location';
+                if (value?.isEmpty ?? true) return "Please enter location".tr();
                 return null;
               },
             ),
@@ -717,8 +747,8 @@ class _NewContractScreenState extends State<NewContractScreen> {
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.calendar_today),
-              title: const Text('Sale Date'),
-              subtitle: Text(DateFormat('dd/MM/yyyy').format(_saleDate)),
+              title: Text("Sale Date".tr()),
+              subtitle: Text(DateFormat("dd/MM/yyyy").format(_saleDate)),
               trailing: const Icon(Icons.arrow_forward_ios, size: 16),
               onTap: () async {
                 final picked = await showDatePicker(
@@ -733,8 +763,8 @@ class _NewContractScreenState extends State<NewContractScreen> {
               },
             ),
             const Divider(height: 32),
-            const Text(
-              'Additional Terms',
+            Text(
+              "Additional Terms".tr(),
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -744,8 +774,8 @@ class _NewContractScreenState extends State<NewContractScreen> {
             CheckboxListTile(
               value: _includesEquipment,
               onChanged: (value) => setState(() => _includesEquipment = value!),
-              title: const Text('Price includes equipment'),
-              subtitle: const Text('Engines, navigation devices, etc.'),
+              title: Text("Price includes equipment".tr()),
+              subtitle: Text("Engines, navigation devices, etc.".tr()),
               controlAffinity: ListTileControlAffinity.leading,
               contentPadding: EdgeInsets.zero,
             ),
@@ -753,9 +783,9 @@ class _NewContractScreenState extends State<NewContractScreen> {
               const SizedBox(height: 8),
               TextFormField(
                 controller: _equipmentDetailsController,
-                decoration: const InputDecoration(
-                  labelText: 'Equipment Details',
-                  hintText: 'List included equipment',
+                decoration: InputDecoration(
+                  labelText: "Equipment Details".tr(),
+                  hintText: "List included equipment".tr(),
                 ),
                 maxLines: 3,
               ),
@@ -763,16 +793,16 @@ class _NewContractScreenState extends State<NewContractScreen> {
             CheckboxListTile(
               value: _freeOfLiens,
               onChanged: (value) => setState(() => _freeOfLiens = value!),
-              title: const Text('Free of liens and mortgages'),
-              subtitle: const Text('Seller acknowledges'),
+              title: Text("Free of liens and mortgages".tr()),
+              subtitle: Text("Seller acknowledges".tr()),
               controlAffinity: ListTileControlAffinity.leading,
               contentPadding: EdgeInsets.zero,
             ),
             CheckboxListTile(
               value: _buyerInspected,
               onChanged: (value) => setState(() => _buyerInspected = value!),
-              title: const Text('Buyer inspected the boat'),
-              subtitle: const Text('And accepts its condition'),
+              title: Text("Buyer inspected the boat".tr()),
+              subtitle: Text("And accepts its condition".tr()),
               controlAffinity: ListTileControlAffinity.leading,
               contentPadding: EdgeInsets.zero,
             ),
@@ -790,8 +820,8 @@ class _NewContractScreenState extends State<NewContractScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Add Witnesses',
+            Text(
+              "Add Witnesses".tr(),
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -799,16 +829,16 @@ class _NewContractScreenState extends State<NewContractScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Add at least one witness for the contract',
+            Text(
+              "Add at least one witness for the contract".tr(),
               style: TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 24),
             TextFormField(
               controller: _witnessSearchController,
               decoration: InputDecoration(
-                labelText: 'Search Witness',
-                hintText: 'Enter email or ID number',
+                labelText: "Search Witness".tr(),
+                hintText: "Enter email or ID number".tr(),
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _isSearchingWitness
                     ? const Padding(
@@ -850,7 +880,7 @@ class _NewContractScreenState extends State<NewContractScreen> {
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('ID: ${user.idNumber}'),
+                          Text("ID: ${user.idNumber}"),
                           Text(user.email,
                               style: const TextStyle(fontSize: 12)),
                         ],
@@ -878,7 +908,7 @@ class _NewContractScreenState extends State<NewContractScreen> {
                     Icon(Icons.group_add, size: 64, color: Colors.grey[400]),
                     const SizedBox(height: 16),
                     Text(
-                      'No witnesses added yet',
+                      "No witnesses added yet".tr(),
                       style: TextStyle(color: Colors.grey[600]),
                     ),
                   ],
@@ -902,7 +932,7 @@ class _NewContractScreenState extends State<NewContractScreen> {
                         ),
                       ),
                       title: Text(witness.fullName),
-                      subtitle: Text('ID: ${witness.idNumber}'),
+                      subtitle: Text("ID: ${witness.idNumber}"),
                       trailing: IconButton(
                         icon:
                             const Icon(Icons.remove_circle, color: Colors.red),
@@ -921,21 +951,22 @@ class _NewContractScreenState extends State<NewContractScreen> {
             if (_currentStep == 3) ...[
               const Divider(),
               const SizedBox(height: 16),
-              const Text(
-                'Contract Summary',
+              Text(
+                "Contract Summary".tr(),
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 16),
+              _buildSummaryItem("Buyer".tr(),
+                  _selectedBuyer?.fullName ?? "Not selected".tr()),
+              _buildSummaryItem("Boat".tr(),
+                  "${_vesselNameController.text} - ${_hullNumberController.text}"),
               _buildSummaryItem(
-                  'Buyer', _selectedBuyer?.fullName ?? 'Not selected'),
-              _buildSummaryItem('Boat',
-                  '${_vesselNameController.text} - ${_hullNumberController.text}'),
-              _buildSummaryItem('Amount', 'SAR ${_saleAmountController.text}'),
-              _buildSummaryItem(
-                  'Witnesses', '${_selectedWitnesses.length} witness(es)'),
+                  "Amount".tr(), "SAR".tr() + "${_saleAmountController.text}"),
+              _buildSummaryItem("Witnesses".tr(),
+                  "${_selectedWitnesses.length}" + "witness(es)".tr()),
             ],
           ],
         ),
@@ -975,7 +1006,7 @@ class _NewContractScreenState extends State<NewContractScreen> {
             Expanded(
               child: OutlinedButton(
                 onPressed: _previousStep,
-                child: const Text('Previous'),
+                child: Text("Previous".tr()),
               ),
             ),
           if (_currentStep > 0) const SizedBox(width: 16),
@@ -993,7 +1024,8 @@ class _NewContractScreenState extends State<NewContractScreen> {
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
-                  : Text(_currentStep == 3 ? 'Create Contract' : 'Next'),
+                  : Text(
+                      _currentStep == 3 ? "Create Contract".tr() : "Next".tr()),
             ),
           ),
         ],
@@ -1024,8 +1056,8 @@ class _NewContractScreenState extends State<NewContractScreen> {
       case 0:
         if (_selectedBuyer == null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Please select a buyer'),
+            SnackBar(
+              content: Text("Please select a buyer".tr()),
               backgroundColor: Colors.red,
             ),
           );
@@ -1036,8 +1068,8 @@ class _NewContractScreenState extends State<NewContractScreen> {
         final isValid = _boatFormKey.currentState?.validate() ?? false;
         if (_engines.isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Please add at least one engine'),
+            SnackBar(
+              content: Text("Please add at least one engine".tr()),
               backgroundColor: Colors.red,
             ),
           );
@@ -1048,8 +1080,8 @@ class _NewContractScreenState extends State<NewContractScreen> {
         final isValid = _saleFormKey.currentState?.validate() ?? false;
         if (!_freeOfLiens || !_buyerInspected) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Please accept all required terms'),
+            SnackBar(
+              content: Text("Please accept all required terms".tr()),
               backgroundColor: Colors.red,
             ),
           );
@@ -1059,8 +1091,8 @@ class _NewContractScreenState extends State<NewContractScreen> {
       case 3:
         if (_selectedWitnesses.isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Please add at least one witness'),
+            SnackBar(
+              content: Text("Please add at least one witness".tr()),
               backgroundColor: Colors.red,
             ),
           );
@@ -1108,17 +1140,17 @@ class _NewContractScreenState extends State<NewContractScreen> {
 
       // Create seller and buyer details
       final sellerDetails = {
-        'name': currentUser.fullName,
-        'idNumber': currentUser.idNumber,
-        'nationality': 'سعودي', // Default, you can add a field for this
-        'idExpiry': '', // You can add a field for this
+        "name".tr(): currentUser.fullName,
+        "idNumber".tr(): currentUser.idNumber,
+        "nationality".tr(): "سعودي", // Default, you can add a field for this
+        "idExpiry".tr(): "", // You can add a field for this
       };
 
       final buyerDetails = {
-        'name': _selectedBuyer!.fullName,
-        'idNumber': _selectedBuyer!.idNumber,
-        'nationality': 'سعودي', // Default
-        'idExpiry': '', // You can add a field for this
+        "name".tr(): _selectedBuyer!.fullName,
+        "idNumber".tr(): _selectedBuyer!.idNumber,
+        "nationality".tr(): "سعودي", // Default
+        "idExpiry".tr(): "", // You can add a field for this
       };
 
       final contractId = await contractService.createContract(
@@ -1132,10 +1164,10 @@ class _NewContractScreenState extends State<NewContractScreen> {
         saleAmountText: _saleAmountTextController.text,
         paymentMethod: _paymentMethod,
         additionalTerms: {
-          'includesEquipment': _includesEquipment,
-          'equipmentDetails': _equipmentDetailsController.text,
-          'freeOfLiens': _freeOfLiens,
-          'buyerInspected': _buyerInspected,
+          "includesEquipment".tr(): _includesEquipment,
+          "equipmentDetails".tr(): _equipmentDetailsController.text,
+          "freeOfLiens".tr(): _freeOfLiens,
+          "buyerInspected".tr(): _buyerInspected,
         },
         saleLocation: _locationController.text,
         saleDate: _saleDate,
@@ -1151,10 +1183,11 @@ class _NewContractScreenState extends State<NewContractScreen> {
               color: Colors.green,
               size: 64,
             ),
-            title: const Text('Contract Created'),
-            content: const Text(
-              'Your contract has been created successfully. '
-              'Signature requests have been sent to the buyer and witnesses.',
+            title: Text("Contract Created".tr()),
+            content: Text(
+              "Your contract has been created successfully. ".tr() +
+                  "Signature requests have been sent to the buyer and witnesses."
+                      .tr(),
             ),
             actions: [
               TextButton(
@@ -1162,7 +1195,7 @@ class _NewContractScreenState extends State<NewContractScreen> {
                   Navigator.pop(context); // Close dialog
                   Navigator.pop(context); // Go back to home
                 },
-                child: const Text('OK'),
+                child: Text("OK".tr()),
               ),
             ],
           ),
@@ -1172,7 +1205,7 @@ class _NewContractScreenState extends State<NewContractScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: ${e.toString()}'),
+            content: Text("Error:".tr() + "${e.toString()}"),
             backgroundColor: Colors.red,
           ),
         );

@@ -1,10 +1,11 @@
 // lib/screens/contracts/admin_home_screen.dart
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../services/auth_service.dart';
-import '../../services/contract_service.dart';
-import '../../widget/home_card.dart';
-import 'admin_approval_screen.dart';
+import "package:easy_localization/easy_localization.dart";
+import "package:flutter/material.dart";
+import "package:provider/provider.dart";
+import "../../services/auth_service.dart";
+import "../../services/contract_service.dart";
+import "../../widget/home_card.dart";
+import "admin_approval_screen.dart";
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});
@@ -40,7 +41,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text('Admin Dashboard'),
+        title: Text("Admin Dashboard".tr()),
         backgroundColor: Colors.purple,
         foregroundColor: Colors.white,
         actions: [
@@ -48,7 +49,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             icon: const Icon(Icons.logout),
             onPressed: () {
               auth.signOut();
-              Navigator.pushReplacementNamed(context, '/login');
+              Navigator.pushReplacementNamed(context, "/login");
             },
           ),
         ],
@@ -88,7 +89,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Welcome, ${auth.currentUser?.fullName ?? 'Admin'}',
+                            "Welcome".tr() +
+                                ",${auth.currentUser?.fullName ?? "Admin"}",
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 18,
@@ -96,8 +98,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          const Text(
-                            'ADMINISTRATOR',
+                          Text(
+                            "ADMINISTRATOR".tr(),
                             style: TextStyle(
                               color: Colors.white70,
                               fontSize: 14,
@@ -118,7 +120,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                 children: [
                   Expanded(
                     child: _buildStatCard(
-                      'Pending Approvals',
+                      "Pending Approvals".tr(),
                       contracts.pendingApprovals.length.toString(),
                       Icons.pending_actions,
                       Colors.orange,
@@ -127,7 +129,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                   const SizedBox(width: 16),
                   Expanded(
                     child: _buildStatCard(
-                      'Approved Today',
+                      "Approved Today".tr(),
                       contracts.getApprovedToday().toString(),
                       Icons.check_circle,
                       Colors.green,
@@ -139,8 +141,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               const SizedBox(height: 24),
 
               // Quick Actions
-              const Text(
-                'Admin Actions',
+              Text(
+                "Admin Actions".tr(),
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -159,8 +161,9 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                 children: [
                   HomeCard(
                     icon: Icons.approval,
-                    title: 'Pending Approvals',
-                    subtitle: '${contracts.pendingApprovals.length} contracts',
+                    title: "Pending Approvals".tr(),
+                    subtitle: "${contracts.pendingApprovals.length}" +
+                        "contracts".tr(),
                     color: Colors.purple,
                     badge: contracts.pendingApprovals.length.toString(),
                     onTap: () {
@@ -174,8 +177,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                   ),
                   HomeCard(
                     icon: Icons.history,
-                    title: 'All Contracts',
-                    subtitle: 'View all contracts',
+                    title: "All Contracts".tr(),
+                    subtitle: "View all contracts".tr(),
                     color: Colors.blue,
                     onTap: () {
                       // Navigate to all contracts with filters
@@ -187,8 +190,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               const SizedBox(height: 32),
 
               // Recent Contracts for Approval
-              const Text(
-                'Recent Contracts Awaiting Approval',
+              Text(
+                "Recent Contracts Awaiting Approval".tr(),
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -210,7 +213,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'No contracts pending approval',
+                          "No contracts pending approval".tr(),
                           style: TextStyle(
                             color: Colors.grey[600],
                             fontSize: 16,
@@ -238,11 +241,11 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                           ),
                         ),
                         title: Text(
-                          'Contract #${contract.id.substring(0, 8)}',
+                          "Contract".tr() + "#${contract.id.substring(0, 8)}",
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         subtitle: Text(
-                          'Amount: SAR ${contract.saleAmount}',
+                          "Amount: SAR".tr() + "${contract.saleAmount}",
                           style: const TextStyle(color: Colors.grey),
                         ),
                         trailing: ElevatedButton(
@@ -257,7 +260,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.purple,
                           ),
-                          child: const Text('Review'),
+                          child: Text("Review".tr()),
                         ),
                       ),
                     );
@@ -279,7 +282,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey,
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),

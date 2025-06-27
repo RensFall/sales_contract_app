@@ -1,12 +1,12 @@
 // lib/screens/contracts/contract_details_screen.dart
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
-import '../../model/contract_model.dart';
-import '../../services/auth_service.dart';
-import '../../services/contract_service.dart';
-import '../../widget/contract_preview.dart';
+import "package:easy_localization/easy_localization.dart";
+import "package:flutter/material.dart";
+import "package:provider/provider.dart";
+import "package:url_launcher/url_launcher.dart";
+import "../../model/contract_model.dart";
+import "../../services/auth_service.dart";
+import "../../services/contract_service.dart";
+import "../../widget/contract_preview.dart";
 
 class ContractDetailsScreen extends StatelessWidget {
   final ContractModel contract;
@@ -23,7 +23,7 @@ class ContractDetailsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Contract #${contract.id.substring(0, 8)}'),
+        title: Text("Contract #".tr() + "${contract.id.substring(0, 8)}"),
         actions: [
           if (contract.finalPdfUrl != null)
             IconButton(
@@ -35,25 +35,25 @@ class ContractDetailsScreen extends StatelessWidget {
             itemBuilder: (context) => [
               if (contract.status == ContractStatus.approved &&
                   contract.finalPdfUrl != null)
-                const PopupMenuItem(
-                  value: 'share',
+                PopupMenuItem(
+                  value: "share",
                   child: Row(
                     children: [
                       Icon(Icons.share, size: 20),
                       SizedBox(width: 12),
-                      Text('Share'),
+                      Text("Share".tr()),
                     ],
                   ),
                 ),
               if (isParticipant &&
                   contract.status == ContractStatus.pendingSignatures)
-                const PopupMenuItem(
-                  value: 'cancel',
+                PopupMenuItem(
+                  value: "cancel",
                   child: Row(
                     children: [
                       Icon(Icons.cancel, size: 20, color: Colors.red),
                       SizedBox(width: 12),
-                      Text('Cancel Contract',
+                      Text("Cancel Contract".tr(),
                           style: TextStyle(color: Colors.red)),
                     ],
                   ),
@@ -69,7 +69,7 @@ class ContractDetailsScreen extends StatelessWidget {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
-              color: _getStatusColor(contract.status).withOpacity(0.1),
+              color: _getStatusColor(contract.status),
               child: Column(
                 children: [
                   Icon(
@@ -90,7 +90,8 @@ class ContractDetailsScreen extends StatelessWidget {
                       contract.approvedAt != null) ...[
                     const SizedBox(height: 8),
                     Text(
-                      'Approved on ${DateFormat('dd/MM/yyyy').format(contract.approvedAt!)}',
+                      "Approved on".tr() +
+                          "${DateFormat("dd/MM/yyyy").format(contract.approvedAt!)}",
                       style: const TextStyle(color: Colors.grey),
                     ),
                   ],
@@ -107,8 +108,8 @@ class ContractDetailsScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Signatures',
+                  Text(
+                    "Signatures".tr(),
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -128,8 +129,8 @@ class ContractDetailsScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Official Stamp',
+                    Text(
+                      "Official Stamp".tr(),
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -139,7 +140,7 @@ class ContractDetailsScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.1),
+                        color: Colors.green,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: Colors.green),
                       ),
@@ -151,19 +152,20 @@ class ContractDetailsScreen extends StatelessWidget {
                             size: 48,
                           ),
                           const SizedBox(width: 16),
-                          const Expanded(
+                          Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Contract Verified',
+                                  "Contract Verified".tr(),
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
                                   ),
                                 ),
                                 Text(
-                                  'This contract has been officially verified and stamped',
+                                  "This contract has been officially verified and stamped"
+                                      .tr(),
                                   style: TextStyle(color: Colors.grey),
                                 ),
                               ],
@@ -184,14 +186,14 @@ class ContractDetailsScreen extends StatelessWidget {
 
   Widget _buildSignatureList(BuildContext context) {
     final allParticipants = [
-      {'id': contract.sellerId, 'role': 'Seller'},
-      {'id': contract.buyerId, 'role': 'Buyer'},
-      ...contract.witnessIds.map((id) => {'id': id, 'role': 'Witness'}),
+      {"id": contract.sellerId},
+      {"id": contract.buyerId},
+      ...contract.witnessIds.map((id) => {"id": id, "role": "Witness"}),
     ];
 
     return Column(
       children: allParticipants.map((participant) {
-        final signature = contract.signatures[participant['id']];
+        final signature = contract.signatures[participant["id"]];
         final isSigned = signature != null;
 
         return Card(
@@ -204,11 +206,11 @@ class ContractDetailsScreen extends StatelessWidget {
                 color: Colors.white,
               ),
             ),
-            title: Text(participant['role']!),
+            title: Text(participant["role"]!),
             subtitle: isSigned
-                ? Text(
-                    'Signed on ${DateFormat('dd/MM/yyyy HH:mm').format(signature.signedAt)}')
-                : const Text('Pending signature'),
+                ? Text("Signed on".tr() +
+                    "${DateFormat("dd/MM/yyyy HH:mm").format(signature.signedAt)}")
+                : Text("Pending signature".tr()),
             trailing: isSigned && signature.isVerified
                 ? const Icon(Icons.verified_user, color: Colors.green)
                 : null,
@@ -267,17 +269,17 @@ class ContractDetailsScreen extends StatelessWidget {
   String _getStatusText(ContractStatus status) {
     switch (status) {
       case ContractStatus.draft:
-        return 'Draft';
+        return "Draft".tr();
       case ContractStatus.pendingSignatures:
-        return 'Pending Signatures';
+        return "Pending Signatures".tr();
       case ContractStatus.signed:
-        return 'All Parties Signed';
+        return "All Parties Signed".tr();
       case ContractStatus.pendingApproval:
-        return 'Pending Official Approval';
+        return "Pending Official Approval".tr();
       case ContractStatus.approved:
-        return 'Officially Approved';
+        return "Officially Approved".tr();
       case ContractStatus.cancelled:
-        return 'Cancelled';
+        return "Cancelled".tr();
       case ContractStatus.pendingPayment:
         // TODO: Handle this case.
         throw UnimplementedError();
@@ -294,8 +296,8 @@ class ContractDetailsScreen extends StatelessWidget {
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Could not download PDF'),
+            SnackBar(
+              content: Text("Could not download PDF".tr()),
               backgroundColor: Colors.red,
             ),
           );
@@ -306,10 +308,10 @@ class ContractDetailsScreen extends StatelessWidget {
 
   void _handleMenuAction(BuildContext context, String action) {
     switch (action) {
-      case 'share':
+      case "share":
         // Implement share functionality
         break;
-      case 'cancel':
+      case "cancel":
         _cancelContract(context);
         break;
     }
@@ -330,8 +332,8 @@ class ContractDetailsScreen extends StatelessWidget {
         if (context.mounted) {
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Contract cancelled'),
+            SnackBar(
+              content: Text("Contract cancelled".tr()),
               backgroundColor: Colors.orange,
             ),
           );
@@ -340,7 +342,7 @@ class ContractDetailsScreen extends StatelessWidget {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Error: ${e.toString()}'),
+              content: Text("Error:".tr() + "${e.toString()}"),
               backgroundColor: Colors.red,
             ),
           );
@@ -361,20 +363,21 @@ class _CancelContractDialogState extends State<_CancelContractDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Cancel Contract'),
+      title: Text("Cancel Contract".tr()),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            'Are you sure you want to cancel this contract? This action cannot be undone.',
+          Text(
+            "Are you sure you want to cancel this contract? This action cannot be undone."
+                .tr(),
             style: TextStyle(color: Colors.grey),
           ),
           const SizedBox(height: 16),
           TextField(
             controller: _reasonController,
-            decoration: const InputDecoration(
-              labelText: 'Reason for cancellation',
-              hintText: 'Please provide a reason',
+            decoration: InputDecoration(
+              labelText: "Reason for cancellation".tr(),
+              hintText: "Please provide a reason".tr(),
             ),
             maxLines: 3,
           ),
@@ -383,12 +386,12 @@ class _CancelContractDialogState extends State<_CancelContractDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Keep Contract'),
+          child: Text("Keep Contract".tr()),
         ),
         ElevatedButton(
           onPressed: () => Navigator.pop(context, _reasonController.text),
           style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-          child: const Text('Cancel Contract'),
+          child: Text("Cancel Contract".tr()),
         ),
       ],
     );

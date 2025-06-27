@@ -1,15 +1,16 @@
 // lib/screens/contracts/admin_contract_review_screen.dart
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:file_picker/file_picker.dart';
-// import 'package:firebase_storage/firebase_storage.dart';
-import 'package:intl/intl.dart';
-import 'dart:io';
-import '../../model/contract_model.dart';
-import '../../services/auth_service.dart';
-import '../../services/contract_service.dart';
-import '../../services/pdf_service.dart';
-import '../../widget/contract_preview.dart';
+import "package:easy_localization/easy_localization.dart";
+import "package:flutter/material.dart";
+import "package:provider/provider.dart";
+import "package:file_picker/file_picker.dart";
+// import "package:firebase_storage/firebase_storage.dart";
+import "package:intl/intl.dart";
+import "dart:io";
+import "../../model/contract_model.dart";
+import "../../services/auth_service.dart";
+import "../../services/contract_service.dart";
+import "../../services/pdf_service.dart";
+import "../../widget/contract_preview.dart";
 
 class AdminContractReviewScreen extends StatefulWidget {
   final ContractModel contract;
@@ -30,7 +31,7 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Contract Review'),
+        title: Text("Contract Review").tr(),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -61,18 +62,18 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
     if (widget.contract.departmentApprovedPdfUrl != null) {
       icon = Icons.verified;
       color = Colors.green;
-      title = 'Contract Approved';
-      subtitle = 'Department approval received';
+      title = "Contract Approved".tr();
+      subtitle = "Department approval received".tr();
     } else if (widget.contract.sentToDepartment) {
       icon = Icons.hourglass_empty;
       color = Colors.orange;
-      title = 'Pending Department Approval';
-      subtitle = 'Waiting for Transportation Department';
+      title = "Pending Department Approval".tr();
+      subtitle = "Waiting for Transportation Department".tr();
     } else {
       icon = Icons.assignment;
       color = Colors.blue;
-      title = 'Ready for Processing';
-      subtitle = 'Generate PDF and submit to department';
+      title = "Ready for Processing".tr();
+      subtitle = "Generate PDF and submit to department".tr();
     }
 
     return Container(
@@ -109,7 +110,8 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
           if (widget.contract.sentToDepartmentAt != null) ...[
             const SizedBox(height: 8),
             Text(
-              'Sent on: ${DateFormat('dd/MM/yyyy').format(widget.contract.sentToDepartmentAt!)}',
+              "Sent on:".tr() +
+                  "${DateFormat("dd/MM/yyyy").format(widget.contract.sentToDepartmentAt!)}",
               style: const TextStyle(
                 color: Colors.white70,
                 fontSize: 12,
@@ -138,7 +140,7 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
               Icon(Icons.check_circle, color: Colors.green.shade700),
               const SizedBox(height: 8),
               Text(
-                'All Signatures Collected',
+                "All Signatures Collected".tr(),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -149,12 +151,13 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            '${widget.contract.signatures.length} signatures verified',
+            "${widget.contract.signatures.length}" + "signatures verified",
             style: const TextStyle(fontSize: 14),
           ),
           const SizedBox(height: 4),
           Text(
-            'Payment completed on ${widget.contract.paidAt != null ? DateFormat('dd/MM/yyyy').format(widget.contract.paidAt!) : "N/A"}',
+            "Payment completed on".tr() +
+                "${widget.contract.paidAt != null ? DateFormat("dd/MM/yyyy").format(widget.contract.paidAt!) : "N/A"}",
             style: const TextStyle(fontSize: 14),
           ),
         ],
@@ -190,8 +193,8 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
                       )
                     : const Icon(Icons.picture_as_pdf),
                 label: Text(_isGeneratingPdf
-                    ? 'Generating PDF...'
-                    : 'Generate Contract PDF'),
+                    ? "Generating PDF...".tr()
+                    : "Generate Contract PDF".tr()),
               ),
             ),
             const SizedBox(height: 12),
@@ -206,7 +209,7 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
               child: OutlinedButton.icon(
                 onPressed: () => _downloadPdf(widget.contract.generatedPdfUrl!),
                 icon: const Icon(Icons.download),
-                label: const Text('Download Generated PDF'),
+                label: Text("Download Generated PDF").tr(),
               ),
             ),
             const SizedBox(height: 12),
@@ -219,7 +222,7 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
                   backgroundColor: Colors.orange,
                 ),
                 icon: _isMarkingAsSent
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
@@ -229,14 +232,16 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
                         ),
                       )
                     : const Icon(Icons.send),
-                label: Text(_isMarkingAsSent
-                    ? 'Updating Status...'
-                    : 'Mark as Sent to Department'),
+                label: Text(
+                  _isMarkingAsSent
+                      ? "Updating Status...".tr()
+                      : "Mark as Sent to Department".tr(),
+                ),
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(
-              'Click after submitting to Transportation Department',
+              "Click after submitting to Transportation Department".tr(),
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.grey[600],
@@ -263,7 +268,7 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
                       size: 48, color: Colors.amber.shade700),
                   const SizedBox(height: 12),
                   Text(
-                    'Upload Department Approved PDF',
+                    "Upload Department Approved PDF".tr(),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -271,8 +276,9 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Once you receive the approved PDF from the Transportation Department, upload it here',
+                  Text(
+                    "Once you receive the approved PDF from the Transportation Department, upload it here"
+                        .tr(),
                     style: TextStyle(fontSize: 13),
                     textAlign: TextAlign.center,
                   ),
@@ -297,8 +303,8 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
                             )
                           : const Icon(Icons.cloud_upload),
                       label: Text(_isUploadingApproval
-                          ? 'Uploading...'
-                          : 'Upload Approved PDF'),
+                          ? "Uploading...".tr()
+                          : "Upload Approved PDF".tr()),
                     ),
                   ),
                 ],
@@ -321,7 +327,7 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
                       size: 48, color: Colors.green.shade700),
                   const SizedBox(height: 12),
                   Text(
-                    'Contract Fully Approved',
+                    "Contract Fully Approved".tr(),
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -329,8 +335,9 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'The contract has been approved by the Transportation Department and is now finalized.',
+                  Text(
+                    "The contract has been approved by the Transportation Department and is now finalized."
+                        .tr(),
                     style: TextStyle(fontSize: 13),
                     textAlign: TextAlign.center,
                   ),
@@ -339,7 +346,7 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
                     onPressed: () =>
                         _downloadPdf(widget.contract.departmentApprovedPdfUrl!),
                     icon: const Icon(Icons.download),
-                    label: const Text('Download Final PDF'),
+                    label: Text("Download Final PDF".tr()),
                   ),
                 ],
               ),
@@ -360,9 +367,9 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
       // Upload to Firebase Storage
       // final storageRef = FirebaseStorage.instance
       //     .ref()
-      //     .child('contracts')
+      //     .child("contracts")
       //     .child(widget.contract.id)
-      //     .child('generated_contract.pdf');
+      //     .child("generated_contract.pdf");
 
       // final uploadTask = await storageRef.putData(pdfBytes);
       // final pdfUrl = await uploadTask.ref.getDownloadURL();
@@ -376,7 +383,7 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
       // if (mounted) {
       //   ScaffoldMessenger.of(context).showSnackBar(
       //     const SnackBar(
-      //       content: Text('PDF generated successfully'),
+      //       content: Text("PDF generated successfully"),
       //       backgroundColor: Colors.green,
       //     ),
       //   );
@@ -395,7 +402,7 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error generating PDF: ${e.toString()}'),
+            content: Text("Error generating PDF:".tr() + "${e.toString()}"),
             backgroundColor: Colors.red,
           ),
         );
@@ -411,18 +418,19 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Confirm Submission'),
-        content: const Text(
-          'Have you submitted the contract to the Transportation Department?',
+        title: Text("Confirm Submission".tr()),
+        content: Text(
+          "Have you submitted the contract to the Transportation Department?"
+              .tr(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: const Text("Cancel"),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Yes, Submitted'),
+            child: Text("Yes, Submitted".tr()),
           ),
         ],
       ),
@@ -439,8 +447,8 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Contract marked as sent to department'),
+            SnackBar(
+              content: Text("Contract marked as sent to department".tr()),
               backgroundColor: Colors.green,
             ),
           );
@@ -450,7 +458,7 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Error: ${e.toString()}'),
+              content: Text("Error:" + "${e.toString()}"),
               backgroundColor: Colors.red,
             ),
           );
@@ -468,7 +476,7 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
       // Pick PDF file
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['pdf'],
+        allowedExtensions: ["pdf"],
       );
 
       if (result != null && result.files.single.path != null) {
@@ -479,9 +487,9 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
         // Upload to Firebase Storage
         // final storageRef = FirebaseStorage.instance
         //     .ref()
-        //     .child('contracts')
+        //     .child("contracts")
         //     .child(widget.contract.id)
-        //     .child('department_approved.pdf');
+        //     .child("department_approved.pdf");
 
         // final uploadTask = await storageRef.putFile(file);
         // final approvedPdfUrl = await uploadTask.ref.getDownloadURL();
@@ -503,10 +511,12 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
                 color: Colors.green,
                 size: 64,
               ),
-              title: const Text('Contract Finalized'),
-              content: const Text(
-                'The department-approved PDF has been uploaded successfully. '
-                'All parties have been notified and can now download the final contract.',
+              title: Text("Contract Finalized".tr()),
+              content: Text(
+                "The department-approved PDF has been uploaded successfully. "
+                        .tr() +
+                    "All parties have been notified and can now download the final contract."
+                        .tr(),
               ),
               actions: [
                 TextButton(
@@ -514,7 +524,7 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
                     Navigator.pop(context); // Close dialog
                     Navigator.pop(context); // Go back
                   },
-                  child: const Text('OK'),
+                  child: Text("OK".tr()),
                 ),
               ],
             ),
@@ -525,7 +535,7 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error uploading PDF: ${e.toString()}'),
+            content: Text("Error uploading PDF:" + "${e.toString()}"),
             backgroundColor: Colors.red,
           ),
         );
@@ -541,7 +551,7 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
     // Use the download service to download PDF
     context.read<ContractService>().downloadPdf(
           pdfUrl,
-          'contract_${widget.contract.contractNumber}.pdf',
+          "contract_${widget.contract.contractNumber}.pdf",
         );
   }
 }

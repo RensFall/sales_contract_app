@@ -1,11 +1,11 @@
 // lib/screens/contracts/my_contracts_screen.dart
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
-import '../../model/contract_model.dart';
-import '../../services/auth_service.dart';
-import '../../services/contract_service.dart';
-import 'contract_details_screen.dart';
+import "package:easy_localization/easy_localization.dart";
+import "package:flutter/material.dart";
+import "package:provider/provider.dart";
+import "../../model/contract_model.dart";
+import "../../services/auth_service.dart";
+import "../../services/contract_service.dart";
+import "contract_details_screen.dart";
 
 class MyContractsScreen extends StatefulWidget {
   const MyContractsScreen({super.key});
@@ -55,22 +55,22 @@ class _MyContractsScreenState extends State<MyContractsScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Contracts'),
+        title: Text("My Contracts".tr()),
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: 'Active'),
-            Tab(text: 'Completed'),
-            Tab(text: 'Cancelled'),
+          tabs: [
+            Tab(text: "Active".tr()),
+            Tab(text: "Completed".tr()),
+            Tab(text: "Cancelled".tr()),
           ],
         ),
       ),
       body: TabBarView(
         controller: _tabController,
         children: [
-          _buildContractList(activeContracts, 'active'),
-          _buildContractList(completedContracts, 'completed'),
-          _buildContractList(cancelledContracts, 'cancelled'),
+          _buildContractList(activeContracts, "active".tr()),
+          _buildContractList(completedContracts, "completed".tr()),
+          _buildContractList(cancelledContracts, "cancelled".tr()),
         ],
       ),
     );
@@ -83,7 +83,7 @@ class _MyContractsScreenState extends State<MyContractsScreen>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              type == 'cancelled'
+              type == "cancelled".tr()
                   ? Icons.cancel_outlined
                   : Icons.description_outlined,
               size: 64,
@@ -91,7 +91,7 @@ class _MyContractsScreenState extends State<MyContractsScreen>
             ),
             const SizedBox(height: 16),
             Text(
-              'No $type contracts',
+              "No".tr() + "$type" + "contracts".tr(),
               style: TextStyle(
                 color: Colors.grey[600],
                 fontSize: 16,
@@ -137,7 +137,7 @@ class _MyContractsScreenState extends State<MyContractsScreen>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Contract #${contract.contractNumber}',
+                    "Contract #" + "${contract.contractNumber}",
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -154,7 +154,7 @@ class _MyContractsScreenState extends State<MyContractsScreen>
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      '${contract.boatDetails.vesselName} - ${contract.boatDetails.hullNumber}',
+                      "${contract.boatDetails.vesselName} - ${contract.boatDetails.hullNumber}",
                       style: const TextStyle(color: Colors.grey),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -167,7 +167,8 @@ class _MyContractsScreenState extends State<MyContractsScreen>
                   const Icon(Icons.payments, size: 16, color: Colors.grey),
                   const SizedBox(width: 8),
                   Text(
-                    'SAR ${NumberFormat('#,###').format(contract.saleAmount)}',
+                    "SAR" +
+                        "${NumberFormat("#,###").format(contract.saleAmount)}",
                     style: const TextStyle(color: Colors.grey),
                   ),
                 ],
@@ -179,7 +180,7 @@ class _MyContractsScreenState extends State<MyContractsScreen>
                       size: 16, color: Colors.grey),
                   const SizedBox(width: 8),
                   Text(
-                    DateFormat('dd/MM/yyyy').format(contract.saleDate),
+                    DateFormat("dd/MM/yyyy").format(contract.saleDate),
                     style: const TextStyle(color: Colors.grey),
                   ),
                 ],
@@ -196,7 +197,10 @@ class _MyContractsScreenState extends State<MyContractsScreen>
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${contract.signatures.length} of ${2 + contract.witnessIds.length} signatures',
+                  "${contract.signatures.length} " +
+                      "of" +
+                      " ${2 + contract.witnessIds.length} " +
+                      "signatures".tr(),
                   style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ],
@@ -214,42 +218,42 @@ class _MyContractsScreenState extends State<MyContractsScreen>
     switch (status) {
       case ContractStatus.draft:
         color = Colors.grey;
-        text = 'Draft';
+        text = "Draft".tr();
         break;
       case ContractStatus.pendingSignatures:
         color = Colors.orange;
-        text = 'Pending';
+        text = "Pending".tr();
         break;
       case ContractStatus.signed:
         color = Colors.blue;
-        text = 'Signed';
+        text = "Signed".tr();
         break;
       case ContractStatus.pendingPayment:
         color = Colors.blue;
-        text = 'Payment Required';
+        text = "Payment Required".tr();
         break;
       case ContractStatus.pendingDepartment:
         color = Colors.purple;
-        text = 'Dept. Review';
+        text = "Dept. Review".tr();
         break;
       case ContractStatus.pendingApproval:
         color = Colors.purple;
-        text = 'In Review';
+        text = "In Review".tr();
         break;
       case ContractStatus.approved:
         color = Colors.green;
-        text = 'Approved';
+        text = "Approved".tr();
         break;
       case ContractStatus.cancelled:
         color = Colors.red;
-        text = 'Cancelled';
+        text = "Cancelled".tr();
         break;
     }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
+        color: color,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: color),
       ),
