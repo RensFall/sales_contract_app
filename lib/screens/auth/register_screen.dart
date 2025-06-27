@@ -1,4 +1,5 @@
 // lib/screens/auth/register_screen.dart
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -43,8 +44,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Create Account',
+                Text(
+                  "Create Account".tr(),
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -52,8 +53,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Sign up to get started',
+                Text(
+                  "Sign up to get started".tr(),
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.grey,
@@ -64,17 +65,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 // Full Name Field
                 TextFormField(
                   controller: _fullNameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Full Name',
+                  decoration: InputDecoration(
+                    labelText: "Full Name".tr(),
                     prefixIcon: Icon(Icons.person_outline),
                   ),
                   textCapitalization: TextCapitalization.words,
                   validator: (value) {
                     if (value?.isEmpty ?? true) {
-                      return 'Please enter your full name';
+                      return "Please enter your full name".tr();
                     }
                     if (value!.trim().split(' ').length < 2) {
-                      return 'Please enter your full name (first and last name)';
+                      return "Please enter your full name (first and last name)"
+                          .tr();
                     }
                     return null;
                   },
@@ -85,17 +87,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
+                  decoration: InputDecoration(
+                    labelText: "Email".tr(),
                     prefixIcon: Icon(Icons.email_outlined),
                   ),
                   validator: (value) {
                     if (value?.isEmpty ?? true) {
-                      return 'Please enter your email';
+                      return "Please enter your email".tr();
                     }
                     if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
                         .hasMatch(value!)) {
-                      return 'Please enter a valid email';
+                      return "Please enter a valid email".tr();
                     }
                     return null;
                   },
@@ -107,7 +109,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
-                    labelText: 'Password',
+                    labelText: "Password".tr(),
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -120,19 +122,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       },
                     ),
                     helperText:
-                        'Must be 8+ characters with uppercase, lowercase, and numbers',
+                        "Must be 8+ characters with uppercase, lowercase, and numbers"
+                            .tr(),
                     helperStyle: const TextStyle(fontSize: 12),
                   ),
                   validator: (value) {
                     if (value?.isEmpty ?? true) {
-                      return 'Please enter a password';
+                      return "Please enter your password".tr();
                     }
                     if (value!.length < 8) {
-                      return 'Password must be at least 8 characters';
+                      return "Password must be at least 8 characters".tr();
                     }
                     if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$')
                         .hasMatch(value)) {
-                      return 'Password must contain uppercase, lowercase, and numbers';
+                      return "Password must contain uppercase, lowercase, and numbers"
+                          .tr();
                     }
                     return null;
                   },
@@ -144,7 +148,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _confirmPasswordController,
                   obscureText: _obscureConfirmPassword,
                   decoration: InputDecoration(
-                    labelText: 'Confirm Password',
+                    labelText: "Confirm Password".tr(),
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -160,10 +164,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   validator: (value) {
                     if (value?.isEmpty ?? true) {
-                      return 'Please confirm your password';
+                      return "Please confirm your password".tr();
                     }
                     if (value != _passwordController.text) {
-                      return 'Passwords do not match';
+                      return "Passwords do not match".tr();
                     }
                     return null;
                   },
@@ -178,17 +182,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     FilteringTextInputFormatter.digitsOnly,
                     LengthLimitingTextInputFormatter(10),
                   ],
-                  decoration: const InputDecoration(
-                    labelText: 'ID/Iqama Number',
+                  decoration: InputDecoration(
+                    labelText: "ID/Iqama Number".tr(),
                     prefixIcon: Icon(Icons.badge_outlined),
-                    hintText: '10 digits',
+                    hintText: "10 digits".tr(),
                   ),
                   validator: (value) {
                     if (value?.isEmpty ?? true) {
-                      return 'Please enter your ID number';
+                      return "Please enter your ID/Iqama number".tr();
                     }
                     if (value!.length != 10) {
-                      return 'ID number must be exactly 10 digits';
+                      return "ID/Iqama number must be 10 digits".tr();
                     }
                     return null;
                   },
@@ -203,86 +207,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     FilteringTextInputFormatter.digitsOnly,
                     LengthLimitingTextInputFormatter(10),
                   ],
-                  decoration: const InputDecoration(
-                    labelText: 'Mobile Number',
+                  decoration: InputDecoration(
+                    labelText: "Mobile Number".tr(),
                     prefixIcon: Icon(Icons.phone_outlined),
-                    hintText: '05XXXXXXXX',
+                    hintText: "05XXXXXXXX".tr(),
                   ),
                   validator: (value) {
                     if (value?.isEmpty ?? true) {
-                      return 'Please enter your mobile number';
+                      return "Please enter your mobile number".tr();
                     }
                     if (value!.length != 10) {
-                      return 'Mobile number must be 10 digits';
+                      return "Mobile number must be 10 digits".tr();
                     }
                     if (!value.startsWith('05')) {
-                      return 'Mobile number must start with 05';
+                      return "Mobile number must start with 05".tr();
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 24),
-
-                // Account Type Selection
-                const Text(
-                  'Account Type',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1A3A6F),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey[300]!),
-                  ),
-                  child: Column(
-                    children: [
-                      RadioListTile<String>(
-                        title: const Text('Buyer'),
-                        subtitle: const Text('I want to buy boats'),
-                        value: 'buyer',
-                        groupValue: _userType,
-                        onChanged: (value) =>
-                            setState(() => _userType = value!),
-                      ),
-                      Divider(height: 1, color: Colors.grey[300]),
-                      RadioListTile<String>(
-                        title: const Text('Seller'),
-                        subtitle: const Text('I want to sell boats'),
-                        value: 'seller',
-                        groupValue: _userType,
-                        onChanged: (value) =>
-                            setState(() => _userType = value!),
-                      ),
-                      Divider(height: 1, color: Colors.grey[300]),
-                      RadioListTile<String>(
-                        title: const Text('Witness'),
-                        subtitle: const Text('I want to witness contracts'),
-                        value: 'witness',
-                        groupValue: _userType,
-                        onChanged: (value) =>
-                            setState(() => _userType = value!),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-
                 // Terms and Conditions Checkbox
                 CheckboxListTile(
                   value: _acceptTerms,
                   onChanged: (value) => setState(() => _acceptTerms = value!),
                   controlAffinity: ListTileControlAffinity.leading,
                   contentPadding: EdgeInsets.zero,
-                  title: const Text(
-                    'I accept the Terms of Service and Privacy Policy',
+                  title: Text(
+                    "I accept the Terms of Service and Privacy Policy".tr(),
                     style: TextStyle(fontSize: 14),
                   ),
-                  subtitle: const Text(
-                    'You must accept the terms to continue',
+                  subtitle: Text(
+                    "You must accept the terms to continue".tr(),
                     style: TextStyle(fontSize: 12),
                   ),
                 ),

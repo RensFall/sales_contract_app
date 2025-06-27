@@ -1,4 +1,5 @@
 // lib/screens/auth/login_screen.dart
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../services/auth_service.dart';
@@ -47,8 +48,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 32),
-                const Text(
-                  'Welcome Back',
+                Text(
+                  "Welcome Back".tr(),
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -56,8 +57,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Sign in to continue',
+                Text(
+                  "Sign in to continue".tr(),
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.grey,
@@ -67,16 +68,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
+                  decoration: InputDecoration(
+                    labelText: "Email".tr(),
                     prefixIcon: Icon(Icons.email_outlined),
                   ),
                   validator: (value) {
                     if (value?.isEmpty ?? true) {
-                      return 'Please enter your email';
+                      return "Please enter your email".tr();
                     }
                     if (!value!.contains('@')) {
-                      return 'Please enter a valid email';
+                      return "Please enter a valid email".tr();
                     }
                     return null;
                   },
@@ -86,7 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
-                    labelText: 'Password',
+                    labelText: "Password".tr(),
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -101,10 +102,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   validator: (value) {
                     if (value?.isEmpty ?? true) {
-                      return 'Please enter your password';
+                      return "Please enter your password".tr();
                     }
                     if (value!.length < 6) {
-                      return 'Password must be at least 6 characters';
+                      return "Password must be at least 6 characters".tr();
                     }
                     return null;
                   },
@@ -123,8 +124,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     child: _isLoading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text(
-                            'Sign In',
+                        : Text(
+                            "Sign In".tr(),
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -136,8 +137,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      "Don't have an account? ",
+                    Text(
+                      "Don't have an account?".tr(),
                       style: TextStyle(color: Colors.grey),
                     ),
                     TextButton(
@@ -149,8 +150,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         );
                       },
-                      child: const Text(
-                        'Sign Up',
+                      child: Text(
+                        "Sign Up".tr(),
                         style: TextStyle(
                           color: Color(0xFF1A3A6F),
                           fontWeight: FontWeight.bold,

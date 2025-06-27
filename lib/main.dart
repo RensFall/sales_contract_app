@@ -1,4 +1,5 @@
 // lib/main.dart
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
@@ -11,8 +12,16 @@ import 'util/theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalization.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(const MarineContractsApp());
+  runApp(
+    EasyLocalization(
+      supportedLocales: const [Locale('en'), Locale('ar')],
+      path: 'assets/lang',
+      fallbackLocale: const Locale('ar'),
+      child: const MarineContractsApp(),
+    ),
+  );
 }
 
 class MarineContractsApp extends StatelessWidget {

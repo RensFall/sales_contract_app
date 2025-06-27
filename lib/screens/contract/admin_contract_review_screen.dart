@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+// import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/intl.dart';
 import 'dart:io';
 import '../../model/contract_model.dart';
@@ -358,39 +358,39 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
       final pdfBytes = await PdfService.generateContractPdf(widget.contract);
 
       // Upload to Firebase Storage
-      final storageRef = FirebaseStorage.instance
-          .ref()
-          .child('contracts')
-          .child(widget.contract.id)
-          .child('generated_contract.pdf');
+      // final storageRef = FirebaseStorage.instance
+      //     .ref()
+      //     .child('contracts')
+      //     .child(widget.contract.id)
+      //     .child('generated_contract.pdf');
 
-      final uploadTask = await storageRef.putData(pdfBytes);
-      final pdfUrl = await uploadTask.ref.getDownloadURL();
+      // final uploadTask = await storageRef.putData(pdfBytes);
+      // final pdfUrl = await uploadTask.ref.getDownloadURL();
 
       // Update contract with generated PDF URL
-      await context.read<ContractService>().updateContractPdfUrl(
-            widget.contract.id,
-            pdfUrl,
-          );
+      // await context.read<ContractService>().updateContractPdfUrl(
+      //       widget.contract.id
+      //       // pdfUrl,
+      //     );
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('PDF generated successfully'),
-            backgroundColor: Colors.green,
-          ),
-        );
+      // if (mounted) {
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     const SnackBar(
+      //       content: Text('PDF generated successfully'),
+      //       backgroundColor: Colors.green,
+      //     ),
+      //   );
 
-        // Reload contract data
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => AdminContractReviewScreen(
-              contract: widget.contract.copyWith(generatedPdfUrl: pdfUrl),
-            ),
-          ),
-        );
-      }
+      //   // Reload contract data
+      //   Navigator.pushReplacement(
+      //     context,
+      //     MaterialPageRoute(
+      //       builder: (context) => AdminContractReviewScreen(
+      //         contract: widget.contract.copyWith(generatedPdfUrl: pdfUrl),
+      //       ),
+      //     ),
+      //   );
+      // }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -477,21 +477,21 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
         final file = File(result.files.single.path!);
 
         // Upload to Firebase Storage
-        final storageRef = FirebaseStorage.instance
-            .ref()
-            .child('contracts')
-            .child(widget.contract.id)
-            .child('department_approved.pdf');
+        // final storageRef = FirebaseStorage.instance
+        //     .ref()
+        //     .child('contracts')
+        //     .child(widget.contract.id)
+        //     .child('department_approved.pdf');
 
-        final uploadTask = await storageRef.putFile(file);
-        final approvedPdfUrl = await uploadTask.ref.getDownloadURL();
+        // final uploadTask = await storageRef.putFile(file);
+        // final approvedPdfUrl = await uploadTask.ref.getDownloadURL();
 
         // Update contract with approved PDF
-        await context.read<ContractService>().uploadDepartmentApprovedPdf(
-              widget.contract.id,
-              approvedPdfUrl,
-              context.read<AuthService>().currentUser!.uid,
-            );
+        // await context.read<ContractService>().uploadDepartmentApprovedPdf(
+        //       widget.contract.id,
+        //       // approvedPdfUrl,
+        //       context.read<AuthService>().currentUser!.uid,
+        //     );
 
         if (mounted) {
           showDialog(

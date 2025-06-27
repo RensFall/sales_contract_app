@@ -1,7 +1,7 @@
 // lib/services/contract_service.dart
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+// import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:url_launcher/url_launcher.dart';
@@ -15,7 +15,7 @@ import 'contract_service_stub.dart'
 
 class ContractService extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseStorage _storage = FirebaseStorage.instance;
+  // final FirebaseStorage _storage = FirebaseStorage.instance;
 
   List<ContractModel> _contracts = [];
   List<ContractModel> get contracts => _contracts;
@@ -216,13 +216,13 @@ class ContractService extends ChangeNotifier {
               }));
 
       // Upload signature image
-      final signatureUrl =
-          await _uploadSignature(contractId, userId, signatureData);
+      // final signatureUrl =
+      //     await _uploadSignature(contractId, userId, signatureData);
 
       // Create signature data
       final signature = SignatureData(
         userId: userId,
-        signatureImageUrl: signatureUrl,
+        // signatureImageUrl: signatureUrl,
         signedAt: DateTime.now(),
         ipAddress: '', // Get from request
         deviceInfo: '', // Get device info
@@ -268,23 +268,23 @@ class ContractService extends ChangeNotifier {
     }
   }
 
-  Future<String> _uploadSignature(
-      String contractId, String userId, String signatureData) async {
-    try {
-      // Convert base64 to bytes
-      final bytes = base64Decode(signatureData.split(',').last);
+  // Future<String> _uploadSignature(
+  //     String contractId, String userId, String signatureData) async {
+  //   try {
+  //     // Convert base64 to bytes
+  //     final bytes = base64Decode(signatureData.split(',').last);
 
-      // Upload to Firebase Storage
-      final ref =
-          _storage.ref().child('contracts/$contractId/signatures/$userId.png');
+  //     // Upload to Firebase Storage
+  //     final ref =
+  //         _storage.ref().child('contracts/$contractId/signatures/$userId.png');
 
-      final uploadTask = await ref.putData(bytes);
-      return await uploadTask.ref.getDownloadURL();
-    } catch (e) {
-      print('Error uploading signature: $e');
-      throw Exception('Failed to upload signature: $e');
-    }
-  }
+  //     final uploadTask = await ref.putData(bytes);
+  //     return await uploadTask.ref.getDownloadURL();
+  //   } catch (e) {
+  //     print('Error uploading signature: $e');
+  //     throw Exception('Failed to upload signature: $e');
+  //   }
+  // }
 
   Future<void> addPayment({
     required String contractId,
@@ -295,13 +295,13 @@ class ContractService extends ChangeNotifier {
   }) async {
     try {
       // Upload receipt image
-      final receiptUrl = await _uploadReceipt(contractId, receiptImage);
+      // final receiptUrl = await _uploadReceipt(contractId, receiptImage);
 
       final paymentData = PaymentData(
         transactionId: transactionId,
         amount: amount,
         paymentMethod: paymentMethod,
-        receiptUrl: receiptUrl,
+        // receiptUrl: receiptUrl,
         paidAt: DateTime.now(),
         isVerified: false,
       );
@@ -322,18 +322,18 @@ class ContractService extends ChangeNotifier {
     }
   }
 
-  Future<String> _uploadReceipt(String contractId, String receiptImage) async {
-    try {
-      final bytes = base64Decode(receiptImage.split(',').last);
-      final ref = _storage.ref().child('contracts/$contractId/receipt.png');
+  // Future<String> _uploadReceipt(String contractId, String receiptImage) async {
+  //   try {
+  //     final bytes = base64Decode(receiptImage.split(',').last);
+  //     final ref = _storage.ref().child('contracts/$contractId/receipt.png');
 
-      final uploadTask = await ref.putData(bytes);
-      return await uploadTask.ref.getDownloadURL();
-    } catch (e) {
-      print('Error uploading receipt: $e');
-      throw Exception('Failed to upload receipt: $e');
-    }
-  }
+  //     final uploadTask = await ref.putData(bytes);
+  //     return await uploadTask.ref.getDownloadURL();
+  //   } catch (e) {
+  //     print('Error uploading receipt: $e');
+  //     throw Exception('Failed to upload receipt: $e');
+  //   }
+  // }
 
   Future<void> _notifyAdminsAboutPendingContract(String contractId) async {
     // Get all admin users
@@ -375,17 +375,17 @@ class ContractService extends ChangeNotifier {
       final pdfService = PdfService();
       final pdfBytes = await PdfService.generateContractPdf(contract);
 
-      // Upload to Firebase Storage
-      final ref =
-          _storage.ref().child('contracts/$contractId/generated_contract.pdf');
+      // // Upload to Firebase Storage
+      // final ref =
+      //     _storage.ref().child('contracts/$contractId/generated_contract.pdf');
 
-      final uploadTask = await ref.putData(pdfBytes);
-      final pdfUrl = await uploadTask.ref.getDownloadURL();
+      // final uploadTask = await ref.putData(pdfBytes);
+      // final pdfUrl = await uploadTask.ref.getDownloadURL();
 
       // Update contract with generated PDF URL
-      await _firestore.collection('contracts').doc(contractId).update({
-        'generatedPdfUrl': pdfUrl,
-      });
+      // await _firestore.collection('contracts').doc(contractId).update({
+      //   'generatedPdfUrl': pdfUrl,
+      // });
 
       notifyListeners();
     } catch (e) {
@@ -465,13 +465,13 @@ class ContractService extends ChangeNotifier {
               }));
 
       // Upload signature image
-      final signatureUrl =
-          await _uploadSignature(contractId, userId, signatureData);
+      // final signatureUrl =
+      //     await _uploadSignature(contractId, userId, signatureData);
 
       // Create signature data
       final signature = SignatureData(
         userId: userId,
-        signatureImageUrl: signatureUrl,
+        // signatureImageUrl: signatureUrl,
         signedAt: DateTime.now(),
         ipAddress: '', // Get from request
         deviceInfo: '', // Get device info
