@@ -186,8 +186,8 @@ class ContractDetailsScreen extends StatelessWidget {
 
   Widget _buildSignatureList(BuildContext context) {
     final allParticipants = [
-      {"id": contract.sellerId},
-      {"id": contract.buyerId},
+      {"id": contract.sellerId, "role": "Seller"}, // ✅ Add role
+      {"id": contract.buyerId, "role": "Buyer"}, // ✅ Add role
       ...contract.witnessIds.map((id) => {"id": id, "role": "Witness"}),
     ];
 
@@ -206,10 +206,10 @@ class ContractDetailsScreen extends StatelessWidget {
                 color: Colors.white,
               ),
             ),
-            title: Text(participant["role"]!),
+            title: Text(participant["role"]!.tr()), // Now safe to use
             subtitle: isSigned
-                ? Text("Signed on".tr() +
-                    "${DateFormat("dd/MM/yyyy HH:mm").format(signature.signedAt)}")
+                ? Text("Signed on ".tr() +
+                    DateFormat("dd/MM/yyyy HH:mm").format(signature.signedAt))
                 : Text("Pending signature".tr()),
             trailing: isSigned && signature.isVerified
                 ? const Icon(Icons.verified_user, color: Colors.green)

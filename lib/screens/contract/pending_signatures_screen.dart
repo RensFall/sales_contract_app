@@ -1,12 +1,13 @@
 // lib/screens/contracts/pending_signatures_screen.dart
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../model/contract_model.dart';
-import '../../services/auth_service.dart';
-import '../../services/contract_service.dart';
-import 'package:intl/intl.dart';
+import "package:easy_localization/easy_localization.dart";
+import "package:flutter/material.dart";
+import "package:provider/provider.dart";
+import "../../model/contract_model.dart";
+import "../../services/auth_service.dart";
+import "../../services/contract_service.dart";
+import "package:intl/intl.dart";
 
-import 'signature_screen.dart';
+import "signature_screen.dart";
 
 class PendingSignaturesScreen extends StatefulWidget {
   const PendingSignaturesScreen({super.key});
@@ -42,7 +43,7 @@ class _PendingSignaturesScreenState extends State<PendingSignaturesScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pending Signatures'),
+        title: Text("Pending Signatures".tr()),
       ),
       body: RefreshIndicator(
         onRefresh: _loadContracts,
@@ -58,7 +59,7 @@ class _PendingSignaturesScreenState extends State<PendingSignaturesScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'No pending signatures',
+                      "No pending signatures".tr(),
                       style: TextStyle(
                         color: Colors.grey[600],
                         fontSize: 16,
@@ -91,7 +92,7 @@ class _PendingSignaturesScreenState extends State<PendingSignaturesScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Contract #${contract.id.substring(0, 8)}',
+                  "Contract".tr() + "#${contract.id.substring(0, 8)}",
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -101,11 +102,11 @@ class _PendingSignaturesScreenState extends State<PendingSignaturesScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.2),
+                    color: Colors.orange,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Text(
-                    'Pending',
+                  child: Text(
+                    "Pending".tr(),
                     style: TextStyle(
                       color: Colors.orange,
                       fontSize: 12,
@@ -134,7 +135,8 @@ class _PendingSignaturesScreenState extends State<PendingSignaturesScreen> {
                 const Icon(Icons.payments, size: 16, color: Colors.grey),
                 const SizedBox(width: 8),
                 Text(
-                  'SAR ${NumberFormat('#,###').format(contract.saleAmount)}',
+                  "SAR".tr() +
+                      "${NumberFormat("#,###").format(contract.saleAmount)}",
                   style: const TextStyle(color: Colors.grey),
                 ),
               ],
@@ -152,7 +154,7 @@ class _PendingSignaturesScreenState extends State<PendingSignaturesScreen> {
                   );
                 },
                 icon: const Icon(Icons.edit),
-                label: const Text('Sign Contract'),
+                label: Text("Sign Contract".tr()),
               ),
             ),
           ],

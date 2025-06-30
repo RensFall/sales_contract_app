@@ -68,9 +68,9 @@ class _MyContractsScreenState extends State<MyContractsScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          _buildContractList(activeContracts, "active".tr()),
-          _buildContractList(completedContracts, "completed".tr()),
-          _buildContractList(cancelledContracts, "cancelled".tr()),
+          _buildContractList(activeContracts, "active"),
+          _buildContractList(completedContracts, "completed"),
+          _buildContractList(cancelledContracts, "cancelled"),
         ],
       ),
     );
@@ -78,12 +78,23 @@ class _MyContractsScreenState extends State<MyContractsScreen>
 
   Widget _buildContractList(List<ContractModel> contracts, String type) {
     if (contracts.isEmpty) {
+      String emptyMessage;
+      if (type == "active") {
+        emptyMessage = "No active contracts".tr();
+      } else if (type == "completed") {
+        emptyMessage = "No completed contracts".tr();
+      } else if (type == "cancelled") {
+        emptyMessage = "No cancelled contracts".tr();
+      } else {
+        emptyMessage = "No contracts".tr();
+      }
+
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              type == "cancelled".tr()
+              type == "cancelled" // Remove .tr() here too
                   ? Icons.cancel_outlined
                   : Icons.description_outlined,
               size: 64,
@@ -91,7 +102,7 @@ class _MyContractsScreenState extends State<MyContractsScreen>
             ),
             const SizedBox(height: 16),
             Text(
-              "No".tr() + "$type" + "contracts".tr(),
+              emptyMessage,
               style: TextStyle(
                 color: Colors.grey[600],
                 fontSize: 16,
@@ -136,13 +147,18 @@ class _MyContractsScreenState extends State<MyContractsScreen>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    "Contract #" + "${contract.contractNumber}",
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                  Expanded(
+                    // Add this
+                    child: Text(
+                      "Contract #".tr() + "${contract.contractNumber}",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                      overflow: TextOverflow.ellipsis, // Add this
                     ),
                   ),
+                  const SizedBox(width: 8), // Add spacing
                   _buildStatusBadge(contract.status),
                 ],
               ),
@@ -200,7 +216,7 @@ class _MyContractsScreenState extends State<MyContractsScreen>
                   "${contract.signatures.length} " +
                       "of" +
                       " ${2 + contract.witnessIds.length} " +
-                      "signatures".tr(),
+                      "signatures_".tr(),
                   style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ],

@@ -20,12 +20,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
   String _selectedPaymentMethod = "bank";
   bool _isProcessing = false;
 
-  // Card details controllers
-  final _cardNumberController = TextEditingController();
-  final _cardHolderController = TextEditingController();
-  final _expiryController = TextEditingController();
-  final _cvvController = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -67,9 +61,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text("Boat:".tr()),
-                        Text(
-                          widget.contract.boatDetails.vesselName,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        Expanded(
+                          child: Text(
+                            widget.contract.boatDetails.vesselName,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.end,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ],
                     ),
@@ -79,15 +77,18 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       children: [
                         Text(
                           "Total Amount:".tr(),
-                          style: TextStyle(fontSize: 18),
+                          style: TextStyle(fontSize: 16),
                         ),
-                        Text(
-                          "SAR".tr() +
-                              "${NumberFormat("#,###").format(widget.contract.saleAmount)}",
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1A3A6F),
+                        Flexible(
+                          // Fix overflow issue
+                          child: Text(
+                            "SAR ${NumberFormat("#,###").format(widget.contract.saleAmount)}",
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1A3A6F),
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
@@ -114,6 +115,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
               "Bank Transfer".tr(),
               Icons.account_balance,
             ),
+
+            // Show bank transfer info when selected
+            if (_selectedPaymentMethod == "bank") ...[
+              const SizedBox(height: 16),
+              _buildBankTransferInfo(),
+            ],
+
             const SizedBox(height: 32),
 
             // Pay Button
@@ -128,8 +136,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 child: _isProcessing
                     ? const CircularProgressIndicator(color: Colors.white)
                     : Text(
-                        "Pay SAR".tr() +
-                            "${NumberFormat("#,###").format(widget.contract.saleAmount)}",
+                        "Confirm Payment",
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -147,6 +154,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   Widget _buildPaymentMethodOption(String value, String label, IconData icon) {
     return Card(
+      elevation: _selectedPaymentMethod == value ? 4 : 1,
+      color: _selectedPaymentMethod == value ? Colors.blue.shade50 : null,
       child: RadioListTile<String>(
         value: value,
         groupValue: _selectedPaymentMethod,
@@ -157,50 +166,95 @@ class _PaymentScreenState extends State<PaymentScreen> {
         },
         title: Text(label),
         secondary: Icon(icon),
+        activeColor: Colors.blue,
       ),
     );
   }
 
   Widget _buildBankTransferInfo() {
     return Card(
+      elevation: 3,
+      color: Colors.grey.shade50,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "Bank Transfer Instructions".tr(),
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              children: [
+                Icon(Icons.account_balance, color: Colors.blue),
+                const SizedBox(width: 8),
+                Text(
+                  "Bank Transfer Instructions".tr(),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
-            _buildBankDetail("Bank Name:".tr(), "Al Rajhi Bank"),
-            _buildBankDetail("Account Name:".tr(), "Abher sailing unt"),
-            _buildBankDetail("IBAN:", "SA2080000247608016275078"),
-            _buildBankDetail(
-                "Amount:".tr(),
-                "SAR".tr() +
-                    "${NumberFormat("#,###").format(widget.contract.saleAmount)}"),
-            _buildBankDetail("Reference:", widget.contract.id.substring(0, 8)),
+
+            // Make each detail a copyable card
+            _buildCopyableDetail("Bank Name", "Al Rajhi Bank"),
+            _buildCopyableDetail("Account Name", "Abher sailing unt"),
+            _buildCopyableDetail("IBAN", "SA2080000247608016275078"),
+            _buildCopyableDetail(
+                "Reference", widget.contract.id.substring(0, 8),
+                highlight: true),
+
             const SizedBox(height: 16),
+
+            // Amount to transfer
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.green.shade200),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Amount to Transfer",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green.shade800,
+                    ),
+                  ),
+                  Text(
+                    "SAR ${NumberFormat("#,###").format(widget.contract.saleAmount)}",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green.shade800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Warning message
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.amber,
+                color: Colors.amber.shade50,
                 borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.amber.shade200),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.info, color: Colors.amber[700], size: 20),
+                  Icon(Icons.info, color: Colors.amber.shade700, size: 20),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       "Please use the contract reference when making the transfer"
                           .tr(),
                       style: TextStyle(
-                        color: Colors.amber[700],
+                        color: Colors.amber.shade700,
                         fontSize: 12,
                       ),
                     ),
@@ -214,38 +268,73 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  Widget _buildBankDetail(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              label,
-              style: const TextStyle(color: Colors.grey),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.copy, size: 18),
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: value));
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text("Copied to clipboard".tr()),
-                  duration: Duration(seconds: 2),
+  Widget _buildCopyableDetail(String label, String value,
+      {bool highlight = false}) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: highlight ? Colors.blue.shade50 : Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: highlight ? Colors.blue.shade200 : Colors.grey.shade300,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: () {
+            Clipboard.setData(ClipboardData(text: value));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Row(
+                  children: [
+                    Icon(Icons.check_circle, color: Colors.white, size: 20),
+                    const SizedBox(width: 8),
+                    Text("$label copied to clipboard"),
+                  ],
                 ),
-              );
-            },
+                duration: Duration(seconds: 2),
+                backgroundColor: Colors.green,
+              ),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      value,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color:
+                            highlight ? Colors.blue.shade800 : Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+                Icon(
+                  Icons.copy,
+                  size: 20,
+                  color: highlight ? Colors.blue : Colors.grey,
+                ),
+              ],
+            ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -281,13 +370,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  "Your payment has been processed successfully.".tr(),
+                  "Payment completed successfully.".tr(),
                 ),
                 const SizedBox(height: 16),
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.blue,
+                    color: Colors.blue.shade50,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -317,68 +406,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
         setState(() => _isProcessing = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Payment failed:".tr() + "${e.toString()}"),
+            content: Text("Payment failed: ".tr() + "${e.toString()}"),
             backgroundColor: Colors.red,
           ),
         );
       }
     }
-  }
-
-  @override
-  void dispose() {
-    _cardNumberController.dispose();
-    _cardHolderController.dispose();
-    _expiryController.dispose();
-    _cvvController.dispose();
-    super.dispose();
-  }
-}
-
-// Input formatters for card details
-class _CardNumberFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    final newText = newValue.text.replaceAll(" ", "");
-    final buffer = StringBuffer();
-
-    for (int i = 0; i < newText.length; i++) {
-      if (i > 0 && i % 4 == 0) {
-        buffer.write(" ");
-      }
-      buffer.write(newText[i]);
-    }
-
-    return TextEditingValue(
-      text: buffer.toString(),
-      selection: TextSelection.collapsed(offset: buffer.length),
-    );
-  }
-}
-
-class _ExpiryDateFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    final newText = newValue.text.replaceAll("/", "");
-    if (newText.length > 4) return oldValue;
-
-    final buffer = StringBuffer();
-    for (int i = 0; i < newText.length; i++) {
-      if (i == 2) {
-        buffer.write("/");
-      }
-      buffer.write(newText[i]);
-    }
-
-    return TextEditingValue(
-      text: buffer.toString(),
-      selection: TextSelection.collapsed(offset: buffer.length),
-    );
   }
 }

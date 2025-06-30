@@ -1,10 +1,11 @@
 // lib/screens/contracts/admin_contract_review_screen.dart
 import "package:easy_localization/easy_localization.dart";
 import "package:flutter/material.dart";
+import "package:open_file/open_file.dart";
+import "package:permission_handler/permission_handler.dart";
 import "package:provider/provider.dart";
 import "package:file_picker/file_picker.dart";
 // import "package:firebase_storage/firebase_storage.dart";
-import "package:intl/intl.dart";
 import "dart:io";
 import "../../model/contract_model.dart";
 import "../../services/auth_service.dart";
@@ -207,7 +208,7 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
               width: double.infinity,
               height: 56,
               child: OutlinedButton.icon(
-                onPressed: () => _downloadPdf(widget.contract.generatedPdfUrl!),
+                onPressed: _downloadPdf,
                 icon: const Icon(Icons.download),
                 label: Text("Download Generated PDF").tr(),
               ),
@@ -253,64 +254,63 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
           ],
 
           // Step 3: Upload approved PDF
-          if (widget.contract.sentToDepartment &&
-              widget.contract.departmentApprovedPdfUrl == null) ...[
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.amber.shade50,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.amber),
-              ),
-              child: Column(
-                children: [
-                  Icon(Icons.upload_file,
-                      size: 48, color: Colors.amber.shade700),
-                  const SizedBox(height: 12),
-                  Text(
-                    "Upload Department Approved PDF".tr(),
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.amber.shade700,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Once you receive the approved PDF from the Transportation Department, upload it here"
-                        .tr(),
-                    style: TextStyle(fontSize: 13),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed:
-                          _isUploadingApproval ? null : _uploadApprovedPdf,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                      ),
-                      icon: _isUploadingApproval
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            )
-                          : const Icon(Icons.cloud_upload),
-                      label: Text(_isUploadingApproval
-                          ? "Uploading...".tr()
-                          : "Upload Approved PDF".tr()),
-                    ),
-                  ),
-                ],
-              ),
+
+          // if (widget.contract.sentToDepartment &&
+          //     widget.contract.departmentApprovedPdfUrl == null) ...[
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.amber.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.amber),
             ),
-          ],
+            child: Column(
+              children: [
+                Icon(Icons.upload_file, size: 48, color: Colors.amber.shade700),
+                const SizedBox(height: 12),
+                Text(
+                  "Upload Department Approved PDF".tr(),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.amber.shade700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "Once you receive the approved PDF from the Transportation Department, upload it here"
+                      .tr(),
+                  style: TextStyle(fontSize: 13),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _isUploadingApproval ? null : _uploadApprovedPdf,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                    ),
+                    icon: _isUploadingApproval
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Icon(Icons.cloud_upload),
+                    label: Text(_isUploadingApproval
+                        ? "Uploading...".tr()
+                        : "Upload Approved PDF".tr()),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // ],
 
           // Step 4: Contract is fully approved
           if (widget.contract.departmentApprovedPdfUrl != null) ...[
@@ -343,8 +343,7 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
                   ),
                   const SizedBox(height: 16),
                   OutlinedButton.icon(
-                    onPressed: () =>
-                        _downloadPdf(widget.contract.departmentApprovedPdfUrl!),
+                    onPressed: () => _downloadPdf(),
                     icon: const Icon(Icons.download),
                     label: Text("Download Final PDF".tr()),
                   ),
@@ -361,56 +360,38 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
     setState(() => _isGeneratingPdf = true);
 
     try {
-      // Generate PDF using PDF service
       final pdfBytes = await PdfService.generateContractPdf(widget.contract);
 
-      // Upload to Firebase Storage
-      // final storageRef = FirebaseStorage.instance
-      //     .ref()
-      //     .child("contracts")
-      //     .child(widget.contract.id)
-      //     .child("generated_contract.pdf");
+      // Ensure permission is granted
+      if (Platform.isAndroid) {
+        var status = await Permission.storage.request();
+        if (!status.isGranted) throw Exception("Storage permission denied");
+      }
 
-      // final uploadTask = await storageRef.putData(pdfBytes);
-      // final pdfUrl = await uploadTask.ref.getDownloadURL();
+      final downloadsDir = Directory('/storage/emulated/0/Download');
+      final pdfFile = File(
+          '${downloadsDir.path}/contract_${widget.contract.contractNumber}.pdf');
+      await pdfFile.writeAsBytes(pdfBytes);
 
-      // Update contract with generated PDF URL
-      // await context.read<ContractService>().updateContractPdfUrl(
-      //       widget.contract.id
-      //       // pdfUrl,
-      //     );
-
-      // if (mounted) {
-      //   ScaffoldMessenger.of(context).showSnackBar(
-      //     const SnackBar(
-      //       content: Text("PDF generated successfully"),
-      //       backgroundColor: Colors.green,
-      //     ),
-      //   );
-
-      //   // Reload contract data
-      //   Navigator.pushReplacement(
-      //     context,
-      //     MaterialPageRoute(
-      //       builder: (context) => AdminContractReviewScreen(
-      //         contract: widget.contract.copyWith(generatedPdfUrl: pdfUrl),
-      //       ),
-      //     ),
-      //   );
-      // }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("PDF generated and saved successfully"),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Error generating PDF:".tr() + "${e.toString()}"),
+            content: Text("Error generating PDF: ${e.toString()}"),
             backgroundColor: Colors.red,
           ),
         );
       }
     } finally {
-      if (mounted) {
-        setState(() => _isGeneratingPdf = false);
-      }
+      if (mounted) setState(() => _isGeneratingPdf = false);
     }
   }
 
@@ -473,44 +454,44 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
 
   Future<void> _uploadApprovedPdf() async {
     try {
-      // Pick PDF file
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ["pdf"],
+        allowedExtensions: ['pdf'],
       );
 
       if (result != null && result.files.single.path != null) {
         setState(() => _isUploadingApproval = true);
 
-        final file = File(result.files.single.path!);
+        final pickedFile = File(result.files.single.path!);
 
-        // Upload to Firebase Storage
-        // final storageRef = FirebaseStorage.instance
-        //     .ref()
-        //     .child("contracts")
-        //     .child(widget.contract.id)
-        //     .child("department_approved.pdf");
+        // Ensure permission is granted
+        if (Platform.isAndroid) {
+          var status = await Permission.storage.request();
+          if (!status.isGranted) throw Exception("Storage permission denied");
+        }
 
-        // final uploadTask = await storageRef.putFile(file);
-        // final approvedPdfUrl = await uploadTask.ref.getDownloadURL();
+        // Save file to Downloads folder
+        final downloadsDir = Directory('/storage/emulated/0/Download');
+        final targetFile = File(
+            '${downloadsDir.path}/approved_${widget.contract.contractNumber}.pdf');
+        await pickedFile.copy(targetFile.path);
 
-        // Update contract with approved PDF
-        // await context.read<ContractService>().uploadDepartmentApprovedPdf(
-        //       widget.contract.id,
-        //       // approvedPdfUrl,
-        //       context.read<AuthService>().currentUser!.uid,
-        //     );
+        // IMPORTANT: Update the contract in Firestore
+        // Since you're not using Firebase Storage, you need to store the local path
+        // or implement a different solution
+        await context.read<ContractService>().uploadDepartmentApprovedPdf(
+              widget.contract.id,
+              targetFile.path, // Store the local path
+              context.read<AuthService>().currentUser!.uid,
+            );
 
         if (mounted) {
           showDialog(
             context: context,
             barrierDismissible: false,
             builder: (context) => AlertDialog(
-              icon: const Icon(
-                Icons.check_circle,
-                color: Colors.green,
-                size: 64,
-              ),
+              icon:
+                  const Icon(Icons.check_circle, color: Colors.green, size: 64),
               title: Text("Contract Finalized".tr()),
               content: Text(
                 "The department-approved PDF has been uploaded successfully. "
@@ -521,8 +502,8 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
               actions: [
                 TextButton(
                   onPressed: () {
-                    Navigator.pop(context); // Close dialog
-                    Navigator.pop(context); // Go back
+                    Navigator.pop(context);
+                    Navigator.pop(context);
                   },
                   child: Text("OK".tr()),
                 ),
@@ -535,23 +516,28 @@ class _AdminContractReviewScreenState extends State<AdminContractReviewScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Error uploading PDF:" + "${e.toString()}"),
+            content: Text("Error uploading PDF:".tr() + " ${e.toString()}"),
             backgroundColor: Colors.red,
           ),
         );
       }
     } finally {
-      if (mounted) {
-        setState(() => _isUploadingApproval = false);
-      }
+      if (mounted) setState(() => _isUploadingApproval = false);
     }
   }
 
-  void _downloadPdf(String pdfUrl) {
-    // Use the download service to download PDF
-    context.read<ContractService>().downloadPdf(
-          pdfUrl,
-          "contract_${widget.contract.contractNumber}.pdf",
-        );
+  void _downloadPdf() async {
+    final filePath =
+        '/storage/emulated/0/Download/contract_${widget.contract.contractNumber}.pdf';
+    final file = File(filePath);
+
+    if (await file.exists()) {
+      // Use any PDF viewer plugin (like open_file or advance_pdf_viewer)
+      await OpenFile.open(filePath);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("PDF file not found.")),
+      );
+    }
   }
 }

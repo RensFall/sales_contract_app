@@ -1,11 +1,10 @@
-// lib/screens/contracts/pending_payment_screen.dart
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
-import '../../model/contract_model.dart';
-import '../../services/auth_service.dart';
-import '../../services/contract_service.dart';
-import 'payment_screen.dart';
+import "package:easy_localization/easy_localization.dart";
+import "package:flutter/material.dart";
+import "package:provider/provider.dart";
+import "../../model/contract_model.dart";
+import "../../services/auth_service.dart";
+import "../../services/contract_service.dart";
+import "payment_screen.dart";
 
 class PendingPaymentScreen extends StatefulWidget {
   const PendingPaymentScreen({super.key});
@@ -40,7 +39,7 @@ class _PendingPaymentScreenState extends State<PendingPaymentScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pending Payment'),
+        title: Text("pending payment".tr()),
       ),
       body: RefreshIndicator(
         onRefresh: _loadContracts,
@@ -56,7 +55,7 @@ class _PendingPaymentScreenState extends State<PendingPaymentScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'No contracts pending payment',
+                      "no contracts pending payment".tr(),
                       style: TextStyle(
                         color: Colors.grey[600],
                         fontSize: 16,
@@ -85,9 +84,9 @@ class _PendingPaymentScreenState extends State<PendingPaymentScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Colors.amber,
-              borderRadius: const BorderRadius.only(
+              borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(12),
                 topRight: Radius.circular(12),
               ),
@@ -96,25 +95,25 @@ class _PendingPaymentScreenState extends State<PendingPaymentScreen> {
               children: [
                 const Icon(
                   Icons.info_outline,
-                  color: Colors.amber,
+                  color: Colors.white,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'All parties have signed!',
-                        style: TextStyle(
+                      Text(
+                        "all parties signed".tr(),
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Colors.amber,
+                          color: Colors.white,
                         ),
                       ),
                       Text(
-                        'Please proceed with payment to finalize the contract',
+                        "please proceed payment".tr(),
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.amber[700],
+                          color: Colors.white,
                         ),
                       ),
                     ],
@@ -132,7 +131,9 @@ class _PendingPaymentScreenState extends State<PendingPaymentScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Contract #${contract.id.substring(0, 8)}',
+                      "contract number".tr(namedArgs: {
+                        "id": contract.id.substring(0, 8),
+                      }),
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -142,13 +143,13 @@ class _PendingPaymentScreenState extends State<PendingPaymentScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.amber.withOpacity(0.2),
+                        color: Colors.amber,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Text(
-                        'Payment Required',
-                        style: TextStyle(
-                          color: Colors.amber,
+                      child: Text(
+                        "payment required".tr(),
+                        style: const TextStyle(
+                          color: Colors.white,
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),
@@ -157,17 +158,23 @@ class _PendingPaymentScreenState extends State<PendingPaymentScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                _buildDetailRow(Icons.directions_boat, 'Boat',
-                    contract.boatDetails.toString()), // could be wrong here
+                _buildDetailRow(Icons.directions_boat, "boat".tr(),
+                    contract.boatDetails.toString()),
                 const SizedBox(height: 8),
-                _buildDetailRow(Icons.person, 'Buyer',
-                    'ID: ${contract.buyerId.substring(0, 8)}'),
+                _buildDetailRow(Icons.person, "buyer".tr(),
+                    "ID: ${contract.buyerId.substring(0, 8)}"),
                 const SizedBox(height: 8),
-                _buildDetailRow(Icons.group, 'Witnesses',
-                    '${contract.witnessIds.length} witness(es)'),
+                _buildDetailRow(
+                    Icons.group,
+                    "witnesses".tr(
+                        namedArgs: {"count": "${contract.witnessIds.length}"}),
+                    ""),
                 const SizedBox(height: 8),
-                _buildDetailRow(Icons.check_circle, 'Signatures',
-                    'All ${contract.signatures.length} collected'),
+                _buildDetailRow(
+                    Icons.check_circle,
+                    "signatures".tr(
+                        namedArgs: {"count": "${contract.signatures.length}"}),
+                    ""),
                 const Divider(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -175,15 +182,15 @@ class _PendingPaymentScreenState extends State<PendingPaymentScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Amount Due',
-                          style: TextStyle(
+                        Text(
+                          "amount due".tr(),
+                          style: const TextStyle(
                             fontSize: 12,
                             color: Colors.grey,
                           ),
                         ),
                         Text(
-                          'SAR ${NumberFormat('#,###').format(contract.saleAmount)}',
+                          "SAR ${NumberFormat("#,###").format(contract.saleAmount)}",
                           style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -208,7 +215,7 @@ class _PendingPaymentScreenState extends State<PendingPaymentScreen> {
                             horizontal: 24, vertical: 12),
                       ),
                       icon: const Icon(Icons.payment),
-                      label: const Text('Pay Now'),
+                      label: Text("pay now".tr()),
                     ),
                   ],
                 ),
@@ -226,7 +233,7 @@ class _PendingPaymentScreenState extends State<PendingPaymentScreen> {
         Icon(icon, size: 16, color: Colors.grey),
         const SizedBox(width: 8),
         Text(
-          '$label: ',
+          "$label: ",
           style: const TextStyle(
             fontSize: 14,
             color: Colors.grey,

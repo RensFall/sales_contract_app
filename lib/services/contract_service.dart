@@ -427,15 +427,17 @@ class ContractService extends ChangeNotifier {
     }
   }
 
+// Modify the ContractService method to handle local paths
   Future<void> uploadDepartmentApprovedPdf(
-      String contractId, String pdfUrl, String adminId) async {
+      String contractId, String pdfPathOrUrl, String adminId) async {
     try {
       await _firestore.collection('contracts').doc(contractId).update({
-        'departmentApprovedPdfUrl': pdfUrl,
+        'departmentApprovedPdfPath':
+            pdfPathOrUrl, // Store as path instead of URL
         'departmentApprovedAt': DateTime.now().toIso8601String(),
         'status': ContractStatus.approved.index,
         'approvedAt': DateTime.now().toIso8601String(),
-        'finalPdfUrl': pdfUrl,
+        'finalPdfPath': pdfPathOrUrl,
         'adminId': adminId,
       });
 
