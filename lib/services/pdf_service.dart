@@ -7,6 +7,41 @@ import 'package:intl/intl.dart';
 import '../model/contract_model.dart';
 
 class PdfService {
+  /// Cleans Arabic text by removing incorrectly attached symbols
+  static String _cleanArabicText(String text) {
+    if (text.isEmpty) return text;
+
+    // Remove % if it's directly attached to Arabic text
+    text = text.replaceAll(RegExp(r'([أ-ي])%'), r'$1');
+
+    // Clean specific known issues
+    text = text.replaceAll('سعودي%', 'سعودي');
+    text = text.replaceAll('المشتري%', 'المشتري');
+
+    return text.trim();
+  }
+
+  /// Adds proper directional marks for mixed RTL/LTR text
+  static String _addDirectionalMarks(String text) {
+    const String rtlMark = '\u200F'; // Right-to-Left Mark
+    const String ltrMark = '\u200E'; // Left-to-Right Mark
+
+    // For percentages, isolate them with LTR marks
+    text = text.replaceAllMapped(
+      RegExp(r'(\d+)%'),
+      (match) => '$ltrMark${match.group(0)}$ltrMark',
+    );
+
+    return text;
+  }
+
+  /// Formats text for proper PDF rendering
+  static String _formatForPdf(String text) {
+    text = _cleanArabicText(text);
+    text = _addDirectionalMarks(text);
+    return text;
+  }
+
   static Future<Uint8List> generateContractPdf(ContractModel contract) async {
     final pdf = pw.Document();
 
@@ -142,13 +177,18 @@ class PdfService {
             ),
             pw.TableRow(
               children: [
+                // Clean nationality - remove any attached %
                 _buildTableCell(
-                    contract.sellerDetails['nationality'] ?? 'سعودي', font),
+                    _cleanArabicText(
+                        contract.sellerDetails['nationality'] ?? 'سعودي'),
+                    font),
+                // Format percentage separately
                 _buildTableCell('100%', font),
                 _buildTableCell(contract.sellerDetails['idExpiry'] ?? '', font),
                 _buildTableCell(contract.sellerDetails['idNumber'] ?? '', font),
                 _buildTableCell(
-                    'السيد / ${contract.sellerDetails['name'] ?? ''}', font),
+                    'السيد / ${_formatForPdf(contract.sellerDetails['name'] ?? '')}',
+                    font),
               ],
             ),
           ],
@@ -169,13 +209,18 @@ class PdfService {
             ),
             pw.TableRow(
               children: [
+                // Clean nationality - remove any attached %
                 _buildTableCell(
-                    contract.buyerDetails['nationality'] ?? 'سعودي', font),
+                    _cleanArabicText(
+                        contract.buyerDetails['nationality'] ?? 'سعودي'),
+                    font),
+                // Format percentage separately
                 _buildTableCell('100%', font),
                 _buildTableCell(contract.buyerDetails['idExpiry'] ?? '', font),
                 _buildTableCell(contract.buyerDetails['idNumber'] ?? '', font),
                 _buildTableCell(
-                    'السيد / ${contract.buyerDetails['name'] ?? ''}', font),
+                    'السيد / ${_formatForPdf(contract.buyerDetails['name'] ?? '')}',
+                    font),
               ],
             ),
           ],
@@ -331,10 +376,11 @@ class PdfService {
       crossAxisAlignment: pw.CrossAxisAlignment.end,
       children: [
         pw.Text(
-          'ثالثاً: قيمة شراء الوحدة البحرية مقابل مبلغ وقدره (${NumberFormat('#,###').format(contract.saleAmount)}) ${contract.saleAmountText}.',
-          style: pw.TextStyle(font: boldFont),
+          'ثالثاً: قيمة شراء الوحدة البحرية مقابل مبلغ وقدره (${_formatForPdf(contract.saleAmount.toStringAsFixed(0))}) ${_formatForPdf(contract.saleAmountText)}.',
+          style: pw.TextStyle(font: font),
           textDirection: pw.TextDirection.rtl,
         ),
+        // ... rest of the sale details
       ],
     );
   }
@@ -444,11 +490,11 @@ class PdfService {
   static pw.Widget _buildTableCell(String text, pw.Font font) {
     return pw.Container(
       padding: const pw.EdgeInsets.all(5),
+      alignment: pw.Alignment.centerRight,
       child: pw.Text(
-        text,
+        _formatForPdf(text), // Apply formatting here
         style: pw.TextStyle(font: font),
         textDirection: pw.TextDirection.rtl,
-        textAlign: pw.TextAlign.center,
       ),
     );
   }

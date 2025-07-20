@@ -1,1 +1,39 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"marine-contracts","appId":"1:896911915796:android:7bdf56b2aed32bc1002001","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"marine-contracts","configurations":{"android":"1:896911915796:android:7bdf56b2aed32bc1002001","ios":"1:896911915796:ios:a5d17938868fbd31002001","macos":"1:896911915796:ios:a5d17938868fbd31002001","web":"1:896911915796:web:752f0ede72191f77002001","windows":"1:896911915796:web:7a4499966e8a1493002001"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "marine-contracts-41e2e",
+          "appId": "1:1032283375110:android:a2be10a6b5e7abf0d6a587",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "marine-contracts-41e2e",
+          "configurations": {
+            "android": "1:1032283375110:android:a2be10a6b5e7abf0d6a587",
+            "ios": "1:1032283375110:ios:9ded2fb10d52fe11d6a587",
+            "macos": "1:1032283375110:ios:9ded2fb10d52fe11d6a587",
+            "web": "1:1032283375110:web:3ff54195f07ebdc6d6a587",
+            "windows": "1:1032283375110:web:3fb5529aaa622e6fd6a587"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

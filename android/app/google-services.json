@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "896911915796",
-    "project_id": "marine-contracts",
-    "storage_bucket": "marine-contracts.firebasestorage.app"
+    "project_number": "1032283375110",
+    "project_id": "marine-contracts-41e2e",
+    "storage_bucket": "marine-contracts-41e2e.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:896911915796:android:7bdf56b2aed32bc1002001",
+        "mobilesdk_app_id": "1:1032283375110:android:a2be10a6b5e7abf0d6a587",
         "android_client_info": {
           "package_name": "com.example.sales_contract_app"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCSt_YH9vOn3IgnxsKiwI28-0lC1wmbk4w"
+          "current_key": "AIzaSyAQ09Hs1gTLnzxeVexG5blA7YBHYLeBhr0"
         }
       ],
       "services": {

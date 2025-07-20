@@ -41,48 +41,48 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDkMlM5cqhVrF7DKftd-BtIzHjw4NW_gW8',
-    appId: '1:896911915796:web:752f0ede72191f77002001',
-    messagingSenderId: '896911915796',
-    projectId: 'marine-contracts',
-    authDomain: 'marine-contracts.firebaseapp.com',
-    storageBucket: 'marine-contracts.firebasestorage.app',
-    measurementId: 'G-3FELPN5LQM',
+    apiKey: 'AIzaSyDdcdKy5Ztosd1gNGdJdfjeT7p5XLyhupg',
+    appId: '1:1032283375110:web:3ff54195f07ebdc6d6a587',
+    messagingSenderId: '1032283375110',
+    projectId: 'marine-contracts-41e2e',
+    authDomain: 'marine-contracts-41e2e.firebaseapp.com',
+    storageBucket: 'marine-contracts-41e2e.firebasestorage.app',
+    measurementId: 'G-M7VLFLJK8N',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCSt_YH9vOn3IgnxsKiwI28-0lC1wmbk4w',
-    appId: '1:896911915796:android:7bdf56b2aed32bc1002001',
-    messagingSenderId: '896911915796',
-    projectId: 'marine-contracts',
-    storageBucket: 'marine-contracts.firebasestorage.app',
+    apiKey: 'AIzaSyAQ09Hs1gTLnzxeVexG5blA7YBHYLeBhr0',
+    appId: '1:1032283375110:android:a2be10a6b5e7abf0d6a587',
+    messagingSenderId: '1032283375110',
+    projectId: 'marine-contracts-41e2e',
+    storageBucket: 'marine-contracts-41e2e.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyATYZnQYZkVpNenSabPkW9EhKDVXIlhq78',
-    appId: '1:896911915796:ios:a5d17938868fbd31002001',
-    messagingSenderId: '896911915796',
-    projectId: 'marine-contracts',
-    storageBucket: 'marine-contracts.firebasestorage.app',
+    apiKey: 'AIzaSyBjlnjzzRJBZYx_sDMJl0NJAbYHOG2bGJU',
+    appId: '1:1032283375110:ios:9ded2fb10d52fe11d6a587',
+    messagingSenderId: '1032283375110',
+    projectId: 'marine-contracts-41e2e',
+    storageBucket: 'marine-contracts-41e2e.firebasestorage.app',
     iosBundleId: 'com.example.salesContractApp',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyATYZnQYZkVpNenSabPkW9EhKDVXIlhq78',
-    appId: '1:896911915796:ios:a5d17938868fbd31002001',
-    messagingSenderId: '896911915796',
-    projectId: 'marine-contracts',
-    storageBucket: 'marine-contracts.firebasestorage.app',
+    apiKey: 'AIzaSyBjlnjzzRJBZYx_sDMJl0NJAbYHOG2bGJU',
+    appId: '1:1032283375110:ios:9ded2fb10d52fe11d6a587',
+    messagingSenderId: '1032283375110',
+    projectId: 'marine-contracts-41e2e',
+    storageBucket: 'marine-contracts-41e2e.firebasestorage.app',
     iosBundleId: 'com.example.salesContractApp',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyDkMlM5cqhVrF7DKftd-BtIzHjw4NW_gW8',
-    appId: '1:896911915796:web:7a4499966e8a1493002001',
-    messagingSenderId: '896911915796',
-    projectId: 'marine-contracts',
-    authDomain: 'marine-contracts.firebaseapp.com',
-    storageBucket: 'marine-contracts.firebasestorage.app',
-    measurementId: 'G-KTE6ZJSD7R',
+    apiKey: 'AIzaSyDdcdKy5Ztosd1gNGdJdfjeT7p5XLyhupg',
+    appId: '1:1032283375110:web:3fb5529aaa622e6fd6a587',
+    messagingSenderId: '1032283375110',
+    projectId: 'marine-contracts-41e2e',
+    authDomain: 'marine-contracts-41e2e.firebaseapp.com',
+    storageBucket: 'marine-contracts-41e2e.firebasestorage.app',
+    measurementId: 'G-C2BGV4E3RS',
   );
 }
